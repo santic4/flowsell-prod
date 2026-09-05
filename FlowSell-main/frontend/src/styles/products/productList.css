@@ -1,0 +1,113 @@
+/* Estilos generales */
+* {
+  box-sizing: border-box;
+}
+
+/* Contenedor de la lista de productos */
+.product-list-container {
+  width: 100%;
+  height: 100%;
+  max-height: 85vh;
+  padding: 2vh 2vw;
+  background-color: white;
+  overflow-y: hidden;
+}
+
+/* Título */
+.product-list-title {
+  font-size: 2.4vh;
+  text-align: center;
+  color: #333;
+  margin: 1vh 0 2vh;
+  font-weight: bold;
+}
+
+.product-list li:nth-child(even) {
+  background-color: #e8f0fe; /* azul muy claro */
+}
+
+.product-list li:nth-child(odd) {
+  background-color: #dbeafe; /* un poco más fuerte */
+}
+
+/* Elementos de la lista */
+.product-item {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.8vh;
+  border-radius: 0.6vh;
+  margin: 0.4vh;
+  border-bottom: 0.1vh solid #ddd;
+  transition: background 0.3s ease-in-out;
+}
+
+.product-item:nth-child(odd) {
+  background-color: #f0f4f8b3;
+}
+
+.product-item:nth-child(even) {
+  background-color: #ffffffba;
+}
+
+.product-item:hover {
+  background-color: #dfe4eabd; 
+}
+
+/* Texto de productos */
+.product-title-list {
+  font-size: 1.6vh;
+  color: #333;
+  font-weight: 500;
+}
+
+.product-id-list {
+  font-size: 1.4vh;
+  color: #666;
+  font-style: italic;
+}
+
+/* Botón de asignar plantilla */
+.assign-template-btn {
+  background: #007bff;
+  color: white;
+  padding: 1vh 2vh;
+  border: none;
+  font-weight: bold;
+  border-radius: 1.8vh; 
+  font-size: 1.4vh;
+  cursor: pointer;
+  transition: background-color 0.3s ease-in-out, transform 0.1s ease-in-out;
+}
+
+.template-search-input {
+  width: 100%;
+  margin: 0;
+  padding: 1vh;
+  border: 1px solid #ccc;
+  border-radius: 0.4vh;
+  font-size: 1.6vh;
+}
+
+.assign-template-btn:hover {
+  background: #0056b3;
+  transform: scale(1.02);
+}
+
+/* Textos de carga y error */
+.loading-text,
+.error-text {
+  font-size: 1.2rem;
+  text-align: center;
+}
+
+.loading-text {
+  color: #666;
+  font-style: italic;
+}
+
+.error-text {
+  color: #cc0000;
+  font-weight: bold;
+}

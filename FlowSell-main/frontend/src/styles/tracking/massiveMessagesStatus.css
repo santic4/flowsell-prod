@@ -1,0 +1,72 @@
+.massive-status-container {
+  max-width: 600px;
+  margin: 40px auto;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  padding: 32px 24px;
+  text-align: center;
+}
+
+.massive-status-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 60px 0;
+}
+
+.massive-spinner {
+  border: 6px solid #f3f3f3;
+  border-top: 6px solid #007bff;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 18px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg);}
+  100% { transform: rotate(360deg);}
+}
+
+.massive-status-label {
+  font-size: 1.2rem;
+  margin: 18px 0;
+  font-weight: bold;
+}
+
+.massive-status-completed {
+  color: #28a745;
+}
+
+.massive-status-processing,
+.massive-status-pending {
+  color: #007bff;
+}
+
+.massive-status-failed {
+  color: #dc3545;
+}
+
+.massive-status-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 18px;
+}
+
+.massive-status-table th,
+.massive-status-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+.massive-status-table th {
+  background: #f7f7f7;
+}
+
+.massive-status-error {
+  color: #dc3545;
+  text-align: center;
+  margin: 40px 0;
+}

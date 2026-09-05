@@ -1,0 +1,92 @@
+.nav-section {
+  position: relative;
+  width: 100%;
+  transition: width 0.4s ease-in-out;
+  padding-top: 2vh;
+}
+
+/* CLOSED STATE */
+.nav-section.closed {
+  width: 5vh;
+  transition: width 0.4s ease-in-out;
+}
+
+/* LINKS: Normal */
+.buttons-container {
+  margin-top: 2vh;
+  transition: 
+    opacity 0.4s ease-in-out,
+    transform 0.4s ease-in-out,
+    visibility 0.4s ease-in-out;
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(0);
+}
+
+/* LINKS: Hidden in closed */
+.nav-section.closed .buttons-container {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(-10px);
+}
+
+/* TOGGLE ICON */
+.toggle-icon {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  cursor: pointer;
+}
+
+.toggle-icon img {
+  height: 3.6vh;
+  transition: transform 0.3s ease;
+}
+
+.toggle-icon img.rotated {
+  margin-right: 1vw;
+  transform: rotate(180deg);
+}
+
+/* NAV BUTTONS */
+.toggle-button {
+  display: block;
+  padding: 1.8vh 1.4vw 2vh 1.4vw;
+  color: #333;
+  border-bottom: 1px solid rgba(51,51,51,0.26);
+  text-decoration: none;
+  font-size: 1.68vh;
+  border-left: 4px solid transparent;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.toggle-button:hover {
+  background-color: #e9ecef;
+}
+
+.toggle-button.active {
+  background-color: #fff;
+  border-left-color: #007bff;
+  color: #007bff;
+  font-weight: 600;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 600px) {
+  .nav-section {
+    position: relative;
+    width: 100%;
+    transition: width 0.4s ease-in-out;
+    padding-top: 1vh;
+  }
+  
+  /* CLOSED STATE */
+  .nav-section.closed {
+    width: 5vh;
+    transition: width 0.4s ease-in-out;
+  }
+
+}

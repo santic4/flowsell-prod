@@ -1,0 +1,85 @@
+/* Contenedor de la burbuja */
+.logout-bubble {
+    position: fixed;
+    bottom: 2vh;
+    left: 2vw;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  /* Estilos para el botón de encendido/apagado */
+  .logout-btn {
+    background-color: transparent;
+    border: none;
+    border-radius: 50%;
+    width: 2em;
+    height: 2em;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease-in-out;
+  }
+  
+  .logout-btn.on {
+    background-color: #4caf50; /* Verde para "encendido" */
+  }
+  
+  .logout-btn.off {
+    background-color: #f44336; /* Rojo para "apagado" */
+  }
+  
+  .logout-icon {
+    font-size: 30px; /* Tamaño del icono */
+    color: white; /* Color blanco para el icono */
+    transition: transform 0.3s ease-in-out;
+  }
+  
+  .logout-icon.on-icon {
+    color: white; /* Color del icono cuando está encendido */
+  }
+  
+  .logout-icon.off-icon {
+    color: white; /* Color del icono cuando está apagado */
+  }
+  
+  /* Estilos para el cartel de confirmación */
+  .confirm-logout {
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+    margin-top: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  }
+  
+  .confirm-btn,
+  .cancel-btn {
+    background-color: #ffffff;
+    color: #4caf50;
+    border: none;
+    padding: 8px 16px;
+    margin: 5px;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+  
+  .confirm-btn:hover,
+  .cancel-btn:hover {
+    background-color: #4caf50;
+    color: white;
+  }
+  
+  .cancel-btn {
+    color: #f44336;
+  }
+  
+  .cancel-btn:hover {
+    background-color: #f44336;
+    color: white;
+  }
+  

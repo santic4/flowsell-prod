@@ -1,0 +1,67 @@
+.paginated-list {
+  max-width: 100%;
+  height: 62vh;
+  list-style: none;
+  padding-left: 2vh;
+  margin: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.paginated-list li {
+  transition: background-color 180ms ease-in-out;
+  border-radius: .5vh;
+  padding: 1vh;
+}
+
+/* Colores intercalados */
+.paginated-list li:nth-child(even) {
+  background-color: #e8f0fe;
+}
+
+.paginated-list li:nth-child(odd) {
+  background-color: #dbeafe;
+}
+
+/* Hover debe ir después y ser más específico */
+.paginated-list li:nth-child(even):hover,
+.paginated-list li:nth-child(odd):hover {
+  background-color: #c7d2fe;
+}
+
+/* Paginación */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5vh;
+  margin: 2vh auto;
+}
+
+.page-item {
+  background-color: #f8f9fa;
+  border: 1px solid #ddd;
+  padding: 0.6vh 1vh;
+  cursor: pointer;
+  font-size: 1vh;
+  border-radius: .4vh;
+  font-weight: bold;
+  transition: all 0.3s ease-in-out;
+}
+
+.page-item:hover {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.page-item.active {
+  background-color: #007bff83;
+  color: white;
+}
+
+.page-item:disabled {
+  background-color: #e9ecef;
+  cursor: not-allowed;
+  color: #6c757d;
+}

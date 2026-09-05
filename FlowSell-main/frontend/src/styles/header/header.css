@@ -1,0 +1,43 @@
+.profile {
+  display: flex;
+  align-items: center;
+  margin-right: 1rem;
+}
+
+.profile-img {
+  width: 4vh;
+  height: 4vh;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 0.5vw;
+}
+
+.profile-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.profile-name {
+  font-size: 1.4vh;
+  font-weight: 500;
+  color: #333333;
+}
+
+.profile-id {
+  font-size: 1.4vh;
+  color: #777777;
+}
+
+@media (max-width: 768px) {
+  .brand-title {
+    display: none;
+  }
+
+  .profile-info .profile-id {
+    display: none;
+  }
+
+  .profile {
+    margin-right: 0.5vh;
+  }
+}

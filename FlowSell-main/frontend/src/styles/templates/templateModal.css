@@ -1,0 +1,185 @@
+/* Estilos para el modal */
+.template-manager-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+/* Contenedor del modal */
+.template-manager-content {
+  background: white;
+  min-width: 90vw;
+  max-width: 90vw;
+  min-height: 90vh;
+  max-height: 90vh;
+  padding: 4vh;
+  border-radius: 1vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 0.5vh 2vh rgba(0, 0, 0, 0.2);
+  overflow-y: auto;
+}
+
+/* Título principal */
+.template-manager-title {
+  font-size: 2.4vh;
+  font-weight: bold;
+  text-align: center;
+  margin: 0;
+  color: #333;
+}
+
+/* Subtítulo */
+.template-manager-subtitle {
+  font-size: 2vh;
+  margin: 1.4vh 0 0.8vh 0;
+  font-weight: 500;
+  color: #555;
+}
+
+/* Lista de plantillas */
+.template-manager-list {
+  list-style: none;
+  padding: 0;
+  margin: 2vh 0;    
+  height: 60vh;
+  overflow-y: auto;
+  border: 0.1vh solid #ddd;
+  border-radius: 0.5vh;
+}
+
+.template-manager-list h3{
+  font-size: 1.6vh;
+  color: #2c3e50;
+}
+
+.template-manager-list p{
+  font-size: 1.6vh;
+  color: #7f8c8d;
+}
+
+/* Ítem de la lista con intercalado de colores */
+.template-manager-item {
+  display: flex;
+  align-items: center;
+  gap: 2vh;
+  min-height: 8vh;
+  padding: 1vh 0.8vh;
+  border-radius: 0.6vh;
+  margin: 0.4vh;
+  border-bottom: 0.1vh solid #ddd;
+  transition: background 0.3s ease-in-out;
+}
+
+.template-manager-item:nth-child(odd) {
+  background-color: #f0f4f8b3;
+}
+
+.template-manager-item:nth-child(even) {
+  background-color: #ffffffba;
+}
+
+.template-manager-item:hover {
+  background-color: #dfe4eabd; 
+}
+
+
+/* Checkbox */
+.template-manager-checkbox {
+  transform: scale(1.2);
+  cursor: pointer;
+}
+
+/* Contenedor de botones */
+.container-modal-product-list {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  gap: 2vh;
+}
+
+/* Botones */
+.template-manager-btn {
+  width: 100%;
+  color: white;
+  border: none;
+  padding: 1vh 2vh;
+  font-weight: bold;
+  border-radius: 1.8vh; 
+  cursor: pointer;
+  transition: background 0.3s ease-in-out, transform 0.2s;
+}
+
+.template-manager-btn:hover {
+  transform: scale(1.02);
+}
+
+.template-manager-btn-close {
+  background: #ff4d4d;
+}
+
+.template-manager-btn-close:hover {
+  background: #b30000;
+}
+
+.template-manager-btn-asign {
+  background: #007bff;
+}
+
+.template-manager-btn-asign:hover {
+  background: #0056b3;
+}
+
+/* Estilos para el selector de variaciones */
+.variation-selector {
+  margin-bottom: 2vh;
+  display: flex;
+  flex-direction: column;
+  gap: 1vh;
+}
+
+.variation-label {
+  font-size: 2vh;
+  font-weight: 500;
+  color: #444;
+}
+
+.variation-select {
+  padding: 1vh;
+  font-size: 1.8vh;
+  border-radius: 0.2vh;
+  border: 0.1vh solid #ccc;
+  transition: border-color 0.3s;
+}
+
+.variation-select:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .template-manager-content {
+    width: 90vw;
+    height: 75vh;
+  }
+
+  .template-manager-title {
+    font-size: 2vh;
+  }
+
+  .template-manager-item {
+    font-size: 1.6vh;
+  }
+
+  .template-manager-btn {
+    font-size: 1.8vh;
+  }
+}
