@@ -1,5 +1,3 @@
-import { imageDeleteFBService } from '../integrations/Firebase/firebaseAPI.js';
-import { Template } from '../models/Template.js';
 import { templatesServices } from '../services/templatesServices.js';
 
 export const createTemplate = async (req, res, next) => {
@@ -71,14 +69,6 @@ export const deleteTemplate = async (req, res, next) => {
   const { id } = req.params;
 
   try {
-    const template = await templatesServices.getTemplateByID(id, userId);
-
-    if(!template) throw new Error('Plantilla no encontrada');
-
-    const templateImagesToDelete = template?.attachments;
-
-    await imageDeleteFBService(templateImagesToDelete);
-
     await templatesServices.deleteTemplate(id, userId);
 
     res.status(200).json({ message: 'Plantilla eliminada correctamente' });

@@ -27,11 +27,10 @@ export const REACT_APP_REDIS_PASSWORD_TRACKING = process.env.REACT_APP_REDIS_PAS
 
 export const REDIS_URL = process.env.REDIS_URL
 
-export const projectId = process.env.FIREBASE_PROJECT_ID;
-export const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
-export const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
-
-export const storageBucket = process.env.FIREBASE_STORAGE_BUCKET || 'alfil-digital.appspot.com';
+export const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME;
+export const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY;
+export const CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET;
+export const CLOUDINARY_FOLDER = process.env.CLOUDINARY_FOLDER || 'flowsell/templates';
 
 export const SESSION_SECRET = process.env.SESSION_SECRET;
 

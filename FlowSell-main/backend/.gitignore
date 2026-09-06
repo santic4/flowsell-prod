@@ -1,6 +1,5 @@
 /node_modules
 .env
-firebase.json
 env
 
 # Node.js
@@ -16,12 +15,5 @@ node_modules
 .env.test
 .env.production
 node_modules
-
-/src/config/serviceAccountKey.json
-src/config/serviceAccountKey.json
-/src/config/serviceAccountKey.json
-
-
-serviceAccountKey.json
 
 ngrok.exe

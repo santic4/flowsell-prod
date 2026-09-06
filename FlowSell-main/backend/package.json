@@ -2,11 +2,11 @@
   "type": "module",
   "name": "backend",
   "version": "1.0.0",
-  "description": "",
+  "description": "Backend multiusuario de Flow Sell para vendedores de Mercado Libre",
   "main": "src/app/app.js",
   "scripts": {
     "start": "node .",
-    "dev": "nodemon -e js .",
+    "dev": "node --watch .",
     "worker:tracking": "node src/workers/worker-tracking.js",
     "test": "node --test"
   },
@@ -21,7 +21,6 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "express-session": "^1.18.1",
-    "firebase-admin": "^14.3.0",
     "helmet": "^8.1.0",
     "ioredis": "^5.6.0",
     "mongoose": "^8.9.2",
@@ -34,6 +33,6 @@
     "qs": "6.16.0"
   },
   "engines": {
-    "node": ">=22"
+    "node": ">=22 <23"
   }
 }

@@ -1,4 +1,4 @@
-import { imageDeleteFBService, imageUploadFBService } from "../integrations/Firebase/firebaseAPI.js";
+import { deleteTemplateImages, uploadTemplateImages } from "../integrations/Cloudinary/cloudinaryAPI.js";
 import { productsDAO } from "../DAO/productsDao.js";
 import { templatesDao } from "../DAO/templateDao.js";
 
@@ -58,17 +58,21 @@ class TemplatesServices{
         filterContent = normalized;
       
         let newImageUrls = [];
-      
-        if (files) {
-          newImageUrls = await imageUploadFBService(files, userId);
-        }
-      
+        if (uploadCount) newImageUrls = await uploadTemplateImages(files, userId);
+
         const publications = Array.isArray(assignedPublications)
           ? assignedPublications.filter(Boolean)
           : assignedPublications ? [assignedPublications] : [];
-        const template = await templatesDao.createTemplate(normalizedName, filterContent, publications, newImageUrls, userId);
-
-        return template;
+        try {
+          return await templatesDao.createTemplate(normalizedName, filterContent, publications, newImageUrls, userId);
+        } catch (error) {
+          if (newImageUrls.length) {
+            await deleteTemplateImages(newImageUrls).catch(cleanupError => {
+              console.warn('No se pudieron limpiar imágenes nuevas de Cloudinary:', cleanupError.message);
+            });
+          }
+          throw error;
+        }
     };
     
     async getTemplatesForID(templateIds, userId){
@@ -158,18 +162,36 @@ class TemplatesServices{
           throw new Error('Cada plantilla admite hasta 20 imágenes.');
         }
 
-        if (toDelete.length > 0) await imageDeleteFBService(toDelete);
-
         let newImageUrls = [];
-        if (files) {
-          newImageUrls = await imageUploadFBService(files, userId);
-        }
+        if (uploadCount) newImageUrls = await uploadTemplateImages(files, userId);
       
         const finalAttachments = [...remainingAttachments, ...newImageUrls];
-      
-        const updatedTemplate = await templatesDao.updateTemplate(id, normalizedName, normalized, assignedPublications, finalAttachments, userId);
 
-        return updatedTemplate;
+        try {
+          const updatedTemplate = await templatesDao.updateTemplate(
+            id,
+            normalizedName,
+            normalized,
+            assignedPublications,
+            finalAttachments,
+            userId,
+          );
+          if (!updatedTemplate) throw new Error('Plantilla no encontrada.');
+
+          if (toDelete.length) {
+            await deleteTemplateImages(toDelete).catch(cleanupError => {
+              console.warn('La plantilla se actualizó, pero Cloudinary no pudo limpiar algunas imágenes:', cleanupError.message);
+            });
+          }
+          return updatedTemplate;
+        } catch (error) {
+          if (newImageUrls.length) {
+            await deleteTemplateImages(newImageUrls).catch(cleanupError => {
+              console.warn('No se pudieron limpiar imágenes nuevas de Cloudinary:', cleanupError.message);
+            });
+          }
+          throw error;
+        }
       } catch (error) {
         throw error;
       }
@@ -190,12 +212,20 @@ class TemplatesServices{
 
       if(!templateId) throw new Error('Data invalid.')
 
+      const template = await templatesDao.getTemplateByID(templateId, userId);
+      if (!template) throw new Error('Plantilla no encontrada.');
+
       const templatesUpdated = await templatesDao.deleteTemplate(templateId, userId);
 
       if (!templatesUpdated) {
         throw new Error('Error al actualizar plantillas.')
       }
       await productsDAO.removeTemplateReferences(userId, templateId);
+      if (template.attachments?.length) {
+        await deleteTemplateImages(template.attachments).catch(cleanupError => {
+          console.warn('La plantilla se eliminó, pero Cloudinary no pudo limpiar algunas imágenes:', cleanupError.message);
+        });
+      }
       return templatesUpdated;
     };
 

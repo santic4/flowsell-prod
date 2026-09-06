@@ -21,7 +21,7 @@ export const replyMessageServices = async (messageId, content, token) => {
 }
 
 async function uploadToMercadoLibre(fileUrl, accessToken) {
-  // 1) Descargamos el blob desde Firebase
+  // 1) Descargamos el adjunto desde el proveedor de almacenamiento
   const response = await fetch(fileUrl);
   if (!response.ok) {
     throw new Error(`No se pudo descargar la imagen: ${response.statusText}`);

@@ -21,7 +21,7 @@ Panel empresarial para vendedores de Mercado Libre. Centraliza publicaciones, au
 ```text
 FlowSell-main/
 ├── frontend/   React 19 + React Router
-└── backend/    Express + MongoDB + BullMQ + Mercado Libre + Firebase Storage
+└── backend/    Express + MongoDB + BullMQ + Mercado Libre + Cloudinary
 ```
 
 El backend sirve el build de React ubicado en `backend/public/build`, por lo que puede desplegarse todo como un único servicio.
@@ -32,7 +32,7 @@ El backend sirve el build de React ubicado en `backend/public/build`, por lo que
 - MongoDB.
 - Redis.
 - Aplicación creada en Mercado Libre con OAuth configurado.
-- Proyecto de Firebase con Storage habilitado, para los adjuntos de las plantillas.
+- Cuenta de Cloudinary para los adjuntos de las plantillas.
 
 ## Puesta en marcha local
 
@@ -41,8 +41,8 @@ El backend sirve el build de React ubicado en `backend/public/build`, por lo que
 3. Instalá las dependencias:
 
    ```bash
-   cd backend && npm install
-   cd ../frontend && npm install
+   cd backend && npm ci
+   cd ../frontend && npm ci
    ```
 
 4. Iniciá el backend:
@@ -99,3 +99,34 @@ cd ../frontend && CI=true npm run build
 ```
 
 Consultá los README de `frontend/` y `backend/` para detalles específicos de cada parte.
+
+## Almacenamiento de imágenes con Cloudinary
+
+Las imágenes se cargan desde el backend mediante la API autenticada de Cloudinary y se organizan en una carpeta independiente por usuario. La clave secreta nunca se envía al navegador.
+
+Configurá estas variables únicamente en `backend/.env` o en el panel de Render:
+
+```env
+CLOUDINARY_CLOUD_NAME=tu_cloud_name
+CLOUDINARY_API_KEY=tu_api_key
+CLOUDINARY_API_SECRET=tu_api_secret
+CLOUDINARY_FOLDER=flowsell/templates
+```
+
+Para Render también podés copiar la plantilla completa `backend/.env.render.example` y reemplazar sus valores de ejemplo. No subas el `.env` real al repositorio.
+
+Los adjuntos nuevos se almacenan en Cloudinary. Los adjuntos históricos de otro proveedor no se copian automáticamente; si dejaron de estar disponibles, deben eliminarse y volver a cargarse desde el editor de la plantilla.
+
+## Despliegue en Render
+
+El archivo `.node-version` fija Node.js 22.22.0. Si el repositorio contiene directamente `backend/` y `frontend/`, dejá **Root Directory** vacío. Si contiene una carpeta superior `FlowSell-main/`, usá esa carpeta como **Root Directory**.
+
+```text
+Build Command:
+npm --prefix frontend ci && npm --prefix frontend run build && npm --prefix backend ci --omit=dev && cp -R frontend/build/. backend/public/build/
+
+Start Command:
+npm --prefix backend start
+```
+
+En producción utilizá una única `REDIS_URL` completa y no definas las variables antiguas `REACT_APP_HOST_REDIS*`.
