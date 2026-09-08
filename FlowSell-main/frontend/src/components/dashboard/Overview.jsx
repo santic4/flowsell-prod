@@ -17,6 +17,7 @@ import useGetSavedProducts from '../../hooks/useGetSavedProducts.js';
 import useGetTemplates from '../../hooks/useGetTemplates.js';
 import useSalesStatistics from '../../hooks/useSalesStatistics.js';
 import { formatCurrency, formatDate, formatNumber, getDateRange } from '../../utils/formatters.js';
+import {useAccount} from '../account/AccountContext.jsx';
 
 const MetricCard = ({ label, value, detail, icon: Icon, accent = 'blue', loading }) => (
   <article className="metric-card">
@@ -30,15 +31,18 @@ const MetricCard = ({ label, value, detail, icon: Icon, accent = 'blue', loading
 );
 
 const Overview = () => {
-  const range = getDateRange(30);
-  const { products, loading: productsLoading } = useGetProducts();
+  const {account}=useAccount();
+  const days=Math.min(30,account.plan.statisticsDays);
+  const range = getDateRange(days);
+  const { total:catalogTotal, loading: productsLoading } = useGetProducts();
   const { products: automatedProducts, loading: automationsLoading } = useGetSavedProducts();
   const { templates, loading: templatesLoading } = useGetTemplates();
   const { data: sales, loading: salesLoading, error: salesError } = useSalesStatistics(range);
   const currency = sales?.meta?.currencyId || 'ARS';
   const summary = sales?.summary || {};
-  const automationCoverage = products.length
-    ? Math.round((automatedProducts.length / products.length) * 100)
+  const activeFlows=automatedProducts.filter(p=>p.effectiveActive).length;
+  const automationCoverage = catalogTotal
+    ? Math.round((activeFlows / catalogTotal) * 100)
     : 0;
 
   const recentOrders = sales?.recentOrders?.slice(0, 4) || [];
@@ -54,7 +58,7 @@ const Overview = () => {
 
       <section className="overview-hero">
         <div className="overview-hero__copy">
-          <span className="overview-hero__eyebrow"><FiTrendingUp /> Últimos 30 días</span>
+          <span className="overview-hero__eyebrow"><FiTrendingUp /> Últimos {days} días</span>
           <p>Ventas procesadas</p>
           <strong className={salesLoading ? 'skeleton skeleton--hero' : ''}>
             {salesLoading ? '' : formatCurrency(summary.totalRevenue, currency)}
@@ -68,8 +72,8 @@ const Overview = () => {
       </section>
 
       <section className="metrics-grid" aria-label="Indicadores principales">
-        <MetricCard label="Publicaciones" value={formatNumber(products.length)} detail="Sincronizadas con Mercado Libre" icon={FiPackage} accent="blue" loading={productsLoading} />
-        <MetricCard label="Flujos activos" value={formatNumber(automatedProducts.length)} detail={`${automationCoverage}% del catálogo cubierto`} icon={FiLayers} accent="violet" loading={automationsLoading || productsLoading} />
+        <MetricCard label="Publicaciones" value={formatNumber(catalogTotal)} detail="Sincronizadas con Mercado Libre" icon={FiPackage} accent="blue" loading={productsLoading} />
+        <MetricCard label="Flujos activos" value={formatNumber(activeFlows)} detail={`${automationCoverage}% del catálogo cubierto`} icon={FiLayers} accent="violet" loading={automationsLoading || productsLoading} />
         <MetricCard label="Plantillas" value={formatNumber(templates.length)} detail="Mensajes listos para usar" icon={FiFileText} accent="amber" loading={templatesLoading} />
         <MetricCard label="Ticket promedio" value={formatCurrency(summary.averageTicket, currency)} detail="Promedio del período" icon={FiBarChart2} accent="green" loading={salesLoading} />
       </section>

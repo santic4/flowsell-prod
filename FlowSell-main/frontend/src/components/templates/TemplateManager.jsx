@@ -3,7 +3,9 @@ import Modal from 'react-modal';
 import Swal from 'sweetalert2';
 import { toast } from 'react-toastify';
 import { FiEdit3, FiFileText, FiImage, FiPaperclip, FiPlus, FiTrash2, FiX } from 'react-icons/fi';
-import { apiRequest } from '../../api/api.js';
+import { apiRequest,apiUrl } from '../../api/api.js';
+import {useAccount} from '../account/AccountContext.jsx';
+import {Link} from 'react-router-dom';
 import useCreateTemplate from '../../hooks/useCreateTemplate.js';
 import { useUpdateTemplate } from '../../hooks/useUpdateTemplate.js';
 import PageHeader from '../common/PageHeader.jsx';
@@ -34,7 +36,7 @@ const AttachmentPreview = ({ images = [], onRemove }) => {
         const key = typeof image === 'string' ? image : `${image.name}-${index}`;
         return (
           <div className="attachment-preview__item" key={key}>
-            <img src={url} alt="Vista previa del adjunto" />
+            <img src={url.startsWith('/api/')?apiUrl(url):url} alt="Vista previa del adjunto" />
             {onRemove && <button type="button" onClick={() => onRemove(image, index)} aria-label="Quitar imagen"><FiX /></button>}
           </div>
         );
@@ -44,6 +46,7 @@ const AttachmentPreview = ({ images = [], onRemove }) => {
 };
 
 const TemplateManager = () => {
+  const {account}=useAccount();
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -174,6 +177,7 @@ const TemplateManager = () => {
         title="Plantillas"
         description="Creá mensajes reutilizables para automatizaciones y campañas. Cada mensaje admite hasta 350 caracteres."
       />
+      <p className="fs-quota-banner">{templates.length} de {account.plan.templates} plantillas · {account.plan.name}. <Link to="/app/plans">Ver capacidades</Link></p>
 
       <div className="template-layout">
         <section className="panel template-library">
@@ -202,6 +206,7 @@ const TemplateManager = () => {
                     </div>
                   </div>
                   <p className="template-card__content">{template.content}</p>
+                  {template.legacyAttachments>0&&<p className="form-alert form-alert--error">Adjuntos antiguos pendientes de migración privada. Contactá a soporte antes de usar esta plantilla.</p>}
                   <div className="template-card__footer">
                     <span>{template.content?.length || 0}/350 caracteres</span>
                     {template.attachments?.length > 0 && <span><FiPaperclip /> {template.attachments.length} adjunto{template.attachments.length === 1 ? '' : 's'}</span>}
@@ -231,11 +236,11 @@ const TemplateManager = () => {
             </label>
             <label className="file-drop">
               <FiImage />
-              <span><strong>Adjuntar imágenes</strong><small>PNG, JPG o WEBP · hasta 20 archivos</small></span>
-              <input key={createInputKey} type="file" accept="image/png,image/jpeg,image/webp" multiple onChange={(event) => setCreateImages(Array.from(event.target.files || []).slice(0, 20))} />
+              <span><strong>Adjuntar imágenes</strong><small>PNG, JPG o WEBP · hasta 5 imágenes de 2 MB</small></span>
+              <input key={createInputKey} type="file" accept="image/png,image/jpeg,image/webp" multiple onChange={(event) => {const files=Array.from(event.target.files||[]);if(files.length>5||files.some(f=>f.size>2*1024*1024)){toast.warning('Máximo 5 imágenes de 2 MB.');return;}setCreateImages(files);}} />
             </label>
             <AttachmentPreview images={createPreviews} onRemove={(_, index) => setCreateImages((images) => images.filter((__, imageIndex) => imageIndex !== index))} />
-            <button type="submit" className="button button--primary button--full" disabled={savingCreate}>
+            <button type="submit" className="button button--primary button--full" disabled={savingCreate||templates.length>=account.plan.templates}>
               {savingCreate ? <><Spinner loading size={16} color="#fff" /> Creando…</> : <><FiPlus /> Crear plantilla</>}
             </button>
           </form>
@@ -253,7 +258,7 @@ const TemplateManager = () => {
               <label className="form-field"><span>Nombre</span><input value={editForm.name} onChange={(event) => setEditForm((form) => ({ ...form, name: event.target.value }))} maxLength={70} required /></label>
               <label className="form-field"><span>Mensaje</span><textarea value={editForm.content} onChange={(event) => setEditForm((form) => ({ ...form, content: event.target.value }))} maxLength={350} rows={7} required /><small className="character-count">{editForm.content.length}/350</small></label>
               {existingImages.length > 0 && <div className="form-field"><span>Imágenes actuales</span><AttachmentPreview images={existingImages} onRemove={(image) => removeExistingImage(image)} /></div>}
-              <label className="file-drop"><FiImage /><span><strong>Agregar imágenes</strong><small>Se sumarán a los adjuntos actuales</small></span><input type="file" accept="image/png,image/jpeg,image/webp" multiple onChange={(event) => setNewEditImages(Array.from(event.target.files || []).slice(0, 20))} /></label>
+              <label className="file-drop"><FiImage /><span><strong>Agregar imágenes</strong><small>Máximo 5 en total, 2 MB por imagen</small></span><input type="file" accept="image/png,image/jpeg,image/webp" multiple onChange={(event) => {const files=Array.from(event.target.files||[]);if(files.length+existingImages.length>5||files.some(f=>f.size>2*1024*1024)){toast.warning('Máximo 5 imágenes de 2 MB en total.');return;}setNewEditImages(files);}} /></label>
               <AttachmentPreview images={editPreviews} onRemove={removeNewImage} />
             </div>
             <div className="modal-shell__footer"><span>{existingImages.length + newEditImages.length} imágenes en total</span><div><button type="button" className="button button--ghost" onClick={closeEdit}>Cancelar</button><button type="submit" className="button button--primary" disabled={savingEdit}>{savingEdit ? <><Spinner loading size={16} color="#fff" /> Guardando…</> : 'Guardar cambios'}</button></div></div>

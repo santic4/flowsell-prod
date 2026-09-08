@@ -10,6 +10,12 @@ const UserSchema = new mongoose.Schema({
   expiresAt:    Date,
   lastUpdated:  Date,
   expiresIn:    Number,
+  plan: { type: String, enum:['free','premium','plus'], default:'free' },
+  planExpiresAt: Date,
+  status: { type:String, enum:['active','disconnected','deleting'], default:'active' },
+  sessionVersion: { type:Number, default:0 },
+  legal: { privacyVersion:String, termsVersion:String, acceptedAt:Date },
+  deletedRequestedAt: Date,
 }, { timestamps: true });
 
 export default mongoose.model('User', UserSchema);

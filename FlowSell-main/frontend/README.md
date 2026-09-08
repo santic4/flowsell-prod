@@ -1,27 +1,9 @@
-# Frontend de Flow Sell
+# Frontend Flow Sell
 
-Aplicación React responsive para operar Flow Sell desde escritorio, tablet o celular.
+React + Vite. npm start usa localhost:3000 y un proxy /api hacia localhost:8080. npm run build genera build/ sin mapas de código fuente.
 
-## Comandos
+El único ajuste público opcional es REACT_APP_HOST_HOOKS. Vacío funciona con el mismo origen en Render y mediante proxy en desarrollo. No declares secretos en variables públicas.
 
-```bash
-npm install
-npm start
-CI=true npm test -- --watchAll=false
-CI=true npm run build
-```
+Las rutas /privacy, /terms y /guide son públicas. /app usa sesión del backend. Los controles visuales de planes acompañan las restricciones obligatorias de la API.
 
-## Configuración
-
-Copiá `.env.example` a `.env` y definí `REACT_APP_HOST_HOOKS` con el origen del backend. En un despliegue de origen único puede dejarse vacío.
-
-## Secciones
-
-- **Resumen:** indicadores y accesos rápidos.
-- **Ventas:** métricas por período, evolución, ranking y exportación CSV.
-- **Publicaciones:** catálogo sincronizado desde Mercado Libre.
-- **Flujos:** mensajes inmediatos y posventa diferida.
-- **Plantillas:** biblioteca, editor y adjuntos.
-- **Campañas:** selección de publicaciones, audiencia, contenido y envío.
-
-El build final se genera en `frontend/build` y debe copiarse a `backend/public/build` para que Express lo sirva en producción.
+Ver ../CONFIGURACION.md.

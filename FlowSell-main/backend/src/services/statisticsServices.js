@@ -1,9 +1,4 @@
-import { trackingDAO } from '../DAO/trackingDao.js';
-
-const CACHE_TTL_MS = 5 * 60 * 1000;
 const MAX_RANGE_DAYS = 366;
-const MAX_ORDERS_PER_REPORT = 20000;
-const reportCache = new Map();
 
 const roundMoney = (value) => Math.round((Number(value) || 0) * 100) / 100;
 const dateKey = (value) => new Date(value).toISOString().slice(0, 10);
@@ -162,66 +157,6 @@ export const aggregateSales = (orders = [], range) => {
     recentOrders,
     currencyId,
   };
-};
-
-const fetchAllPaidOrders = async ({ sellerId, accessToken, range }) => {
-  const limit = 50;
-  let offset = 0;
-  let total = Infinity;
-  const orders = [];
-
-  while (offset < total) {
-    const page = await trackingDAO.fetchOrdersBySeller(sellerId, range.fromIso, range.toIso, accessToken, offset, limit);
-    const results = Array.isArray(page?.results) ? page.results : [];
-    total = Number(page?.paging?.total ?? results.length);
-    orders.push(...results);
-
-    if (!results.length || orders.length >= MAX_ORDERS_PER_REPORT) break;
-    offset += limit;
-  }
-
-  if (orders.length >= MAX_ORDERS_PER_REPORT && total > MAX_ORDERS_PER_REPORT) {
-    throw createHttpError(422, 'El período contiene demasiadas operaciones. Elegí un rango más corto para generar el reporte.');
-  }
-
-  return orders;
-};
-
-const pruneCache = () => {
-  const now = Date.now();
-  reportCache.forEach((entry, key) => {
-    if (now - entry.createdAt > CACHE_TTL_MS) reportCache.delete(key);
-  });
-  while (reportCache.size > 50) reportCache.delete(reportCache.keys().next().value);
-};
-
-export const getSalesReport = async ({ sellerId, accessToken, from, to }) => {
-  if (!sellerId || !accessToken) throw createHttpError(401, 'No hay una cuenta de Mercado Libre disponible para consultar.');
-  const range = validateDateRange(from, to);
-  const cacheKey = `${sellerId}:${range.from}:${range.to}`;
-  pruneCache();
-  const cached = reportCache.get(cacheKey);
-  if (cached && Date.now() - cached.createdAt < CACHE_TTL_MS) return cached.value;
-
-  const orders = await fetchAllPaidOrders({ sellerId, accessToken, range });
-  const aggregate = aggregateSales(orders, range);
-  const report = {
-    summary: aggregate.summary,
-    timeline: aggregate.timeline,
-    topProducts: aggregate.topProducts,
-    recentOrders: aggregate.recentOrders,
-    meta: {
-      from: range.from,
-      to: range.to,
-      rangeDays: range.rangeDays,
-      currencyId: aggregate.currencyId,
-      generatedAt: new Date().toISOString(),
-      source: 'Mercado Libre',
-    },
-  };
-  const value = { report, orders };
-  reportCache.set(cacheKey, { createdAt: Date.now(), value });
-  return value;
 };
 
 const csvCell = (value) => {

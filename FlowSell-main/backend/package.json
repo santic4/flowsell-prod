@@ -3,11 +3,14 @@
   "name": "backend",
   "version": "1.0.0",
   "description": "Backend multiusuario de Flow Sell para vendedores de Mercado Libre",
-  "main": "src/app/app.js",
+  "main": "src/server.js",
   "scripts": {
     "start": "node .",
     "dev": "node --watch .",
-    "worker:tracking": "node src/workers/worker-tracking.js",
+    "worker": "node src/worker.js",
+    "secrets": "node scripts/generate-secrets.mjs",
+    "migrate": "node scripts/migrate.mjs",
+    "check:redis": "node scripts/check-redis.mjs",
     "test": "node --test"
   },
   "keywords": [],
@@ -15,8 +18,8 @@
   "license": "ISC",
   "dependencies": {
     "bullmq": "^5.43.0",
+    "cloudinary": "^2.11.0",
     "connect-mongo": "^5.1.0",
-    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
@@ -25,14 +28,21 @@
     "ioredis": "^5.6.0",
     "mongoose": "^8.9.2",
     "multer": "^2.3.0",
-    "node-fetch": "^3.3.2",
     "passport": "^0.7.0",
-    "passport-oauth2": "^1.8.0"
+    "passport-oauth2": "^1.8.0",
+    "sharp": "^0.35.4",
+    "zod": "^4.5.4"
   },
   "overrides": {
     "qs": "6.16.0"
   },
   "engines": {
-    "node": ">=22 <23"
+    "node": ">=22.12 <25"
+  },
+  "devDependencies": {
+    "mongodb-memory-server": "^11.2.0",
+    "playwright": "^1.63.0",
+    "redis-memory-server": "^0.17.1",
+    "supertest": "^7.2.2"
   }
 }

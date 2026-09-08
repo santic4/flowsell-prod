@@ -1,7 +1,7 @@
 import { Schema, Types, model } from 'mongoose';
 
 const productSchema = new Schema({
-  id: { type: String, required: true, unique: true }, 
+  id: { type: String, required: true },
   owner: { type: Types.ObjectId, ref: 'User', required: true },
   title: { type: String },
   site_id: { type: String }, 
@@ -33,6 +33,9 @@ const productSchema = new Schema({
     },
   ],
   secondMessageDelay: { type: Number, default: 24 },
-});
+  enabled: { type:Boolean, default:true },
+  markDelivered: { type:Boolean, default:false },
+}, { timestamps:true });
+productSchema.index({ owner:1, id:1 }, { unique:true });
 
 export const Product = model('Product', productSchema);

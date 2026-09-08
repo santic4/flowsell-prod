@@ -1,132 +1,67 @@
-# Flow Sell
+# Flow Sell · Seguridad, planes y guía
 
-Panel empresarial para vendedores de Mercado Libre. Centraliza publicaciones, automatizaciones posventa, plantillas, campañas y estadísticas en un espacio de trabajo multiusuario.
+Código completo actualizado. React + Vite, Express, MongoDB, Redis/BullMQ y Cloudinary.
 
-## Qué incluye esta versión
+## Qué incluye
 
-- Interfaz completamente rediseñada y responsive.
-- Navegación reorganizada en **Resumen**, **Ventas**, **Publicaciones**, **Flujos**, **Plantillas** y **Campañas**.
-- Acceso permanente a soporte por WhatsApp.
-- Estadísticas por la cuenta de Mercado Libre autenticada: facturación, órdenes, unidades, ticket promedio, compradores, evolución diaria, productos destacados y últimas operaciones.
-- Exportación de ventas a CSV compatible con Excel.
-- Automatizaciones inmediatas y diferidas con control de orden y demora.
-- Campañas guiadas en cuatro pasos, con seguimiento de progreso.
-- Aislamiento de productos, plantillas, campañas y reportes por usuario.
-- Sesiones persistentes, renovación de tokens y validaciones reforzadas.
+- Login responsive con información comercial y comparación de planes.
+- Resumen, publicaciones, flujos, plantillas, campañas y estadísticas por cuenta.
+- Guía pública e interna, privacidad y términos con aceptación versionada.
+- Mi cuenta: consumos, actividad de envíos, exportación, cierre de sesiones, desconexión y eliminación.
+- Planes Gratuito, Premium y Plus con restricciones reales en servidor y workers.
+- Administración exclusiva por ID de Mercado Libre + autenticador TOTP; cambios de plan y métricas sin contenido de clientes.
+- Tokens cifrados, CSRF, permisos por propietario, controles de archivos, cuotas, webhook validado y deduplicación de envíos.
+- Imágenes privadas authenticated en Cloudinary; scripts de migración y rotación.
+- Pruebas con MongoDB y Redis temporales; QA visual; flujo CI.
 
-> Esta versión no incorpora cobros ni suscripciones dentro de la aplicación, tal como se definió para esta etapa.
+Los cobros se coordinan por fuera de la app. Solicitar un plan exige iniciar sesión y no lo activa automáticamente.
 
-## Arquitectura
+## Planes iniciales
 
-```text
-FlowSell-main/
-├── frontend/   React 19 + React Router
-└── backend/    Express + MongoDB + BullMQ + Mercado Libre + Cloudinary
-```
+| Capacidad | Gratuito | Premium | Plus |
+| --- | ---: | ---: | ---: |
+| Precio mensual de referencia | USD 0 | USD 19 | USD 39 |
+| Flujos activos | 3 | 30 | 150 |
+| Plantillas | 3 | 50 | 200 |
+| Intentos de mensaje/mes | 100 | 3000 | 10000 |
+| Campañas/mes | 0 | 5 | 20 |
+| Compradores/campaña | — | 500 | 2000 |
+| Almacenamiento | 25 MB | 250 MB | 1024 MB |
+| Historial de ventas | 7 días | 90 días | 366 días |
+| CSV y mensajes diferidos | No | Sí | Sí |
 
-El backend sirve el build de React ubicado en `backend/public/build`, por lo que puede desplegarse todo como un único servicio.
+Los precios se configuran con PREMIUM_PRICE_USD y PLUS_PRICE_USD; el precio final, impuestos y condiciones se confirman antes de contratar. Los límites de cargas/transferencia también se detallan en Mi plan. Un downgrade conserva configuraciones y limita su ejecución.
 
-## Requisitos
+## Por dónde empezar
 
-- Node.js 22 o superior.
-- MongoDB.
-- Redis.
-- Aplicación creada en Mercado Libre con OAuth configurado.
-- Cuenta de Cloudinary para los adjuntos de las plantillas.
+1. Si ya usabas Flow Sell, leé [MIGRACION.md](MIGRACION.md) antes de actualizar.
+2. Seguí [CONFIGURACION.md](CONFIGURACION.md): todas las envs, Redis en Render, Cloudinary, login y despliegue.
+3. Completá las tareas reales de [SEGURIDAD-Y-PRIVACIDAD.md](SEGURIDAD-Y-PRIVACIDAD.md).
+4. Revisá [VALIDACION.md](VALIDACION.md) para el alcance y límites de las pruebas.
 
-## Puesta en marcha local
+## Comandos
 
-1. Copiá `backend/.env.example` como `backend/.env` y completá los valores.
-2. Copiá `frontend/.env.example` como `frontend/.env`.
-3. Instalá las dependencias:
-
-   ```bash
-   cd backend && npm ci
-   cd ../frontend && npm ci
-   ```
-
-4. Iniciá el backend:
-
-   ```bash
-   cd backend
-   npm run dev
-   ```
-
-5. En otra terminal, iniciá el frontend:
-
-   ```bash
-   cd frontend
-   npm start
-   ```
-
-El frontend quedará en `http://localhost:3000` y la API en `http://localhost:8080`.
-
-## Build de producción
+Backend, desde backend:
 
 ```bash
-cd frontend
-npm run build
+npm ci
+npm run secrets
+npm run dev
+```
 
-cd ..
-rsync -a --delete frontend/build/ backend/public/build/
+Frontend, desde frontend:
 
-cd backend
+```bash
+npm ci
 npm start
 ```
 
-En el panel de desarrolladores de Mercado Libre, la URL de redirección debe coincidir exactamente con `REDIRECT_URI`, por ejemplo:
+Usá Node.js 22.12 o superior dentro de 22 LTS, o 24 LTS. Frontend local en localhost:3000, backend en localhost:8080. Las envs no están incluidas con secretos reales.
 
-```text
-https://tu-dominio.com/api/auth/callback
-```
+Pruebas: npm --prefix backend test. Compilación: npm --prefix frontend run build. La salida se mantiene en frontend/build para conservar tu despliegue Render.
 
-## Estadísticas y exportación
+## Responsabilidades antes del lanzamiento
 
-La pantalla **Ventas y estadísticas** consulta las órdenes pagadas directamente desde la cuenta de Mercado Libre de la sesión actual. El backend valida un rango máximo de 366 días, pagina los resultados, agrega métricas y mantiene una caché privada breve para evitar solicitudes repetidas.
+Los controles del código no activan MFA en cuentas externas, no contratan backups ni registran bases ante la AAIP. Completá datos del responsable, regiones reales, garantías de transferencias y revisión jurídica; luego LEGAL_READY=true habilita la aceptación y operación. Nunca publiques datos legales ficticios.
 
-El botón **Exportar CSV** descarga el detalle por artículo de cada orden dentro del mismo período seleccionado. Ningún usuario puede consultar el reporte o los trabajos de campaña de otra cuenta.
-
-## Soporte
-
-Los accesos de soporte abren WhatsApp con un mensaje precargado al número **+54 9 2342 51-0893**.
-
-## Verificación
-
-```bash
-cd backend && npm test
-cd ../frontend && CI=true npm test -- --watchAll=false
-cd ../frontend && CI=true npm run build
-```
-
-Consultá los README de `frontend/` y `backend/` para detalles específicos de cada parte.
-
-## Almacenamiento de imágenes con Cloudinary
-
-Las imágenes se cargan desde el backend mediante la API autenticada de Cloudinary y se organizan en una carpeta independiente por usuario. La clave secreta nunca se envía al navegador.
-
-Configurá estas variables únicamente en `backend/.env` o en el panel de Render:
-
-```env
-CLOUDINARY_CLOUD_NAME=tu_cloud_name
-CLOUDINARY_API_KEY=tu_api_key
-CLOUDINARY_API_SECRET=tu_api_secret
-CLOUDINARY_FOLDER=flowsell/templates
-```
-
-Para Render también podés copiar la plantilla completa `backend/.env.render.example` y reemplazar sus valores de ejemplo. No subas el `.env` real al repositorio.
-
-Los adjuntos nuevos se almacenan en Cloudinary. Los adjuntos históricos de otro proveedor no se copian automáticamente; si dejaron de estar disponibles, deben eliminarse y volver a cargarse desde el editor de la plantilla.
-
-## Despliegue en Render
-
-El archivo `.node-version` fija Node.js 22.22.0. Si el repositorio contiene directamente `backend/` y `frontend/`, dejá **Root Directory** vacío. Si contiene una carpeta superior `FlowSell-main/`, usá esa carpeta como **Root Directory**.
-
-```text
-Build Command:
-npm --prefix frontend ci && npm --prefix frontend run build && npm --prefix backend ci --omit=dev && cp -R frontend/build/. backend/public/build/
-
-Start Command:
-npm --prefix backend start
-```
-
-En producción utilizá una única `REDIS_URL` completa y no definas las variables antiguas `REACT_APP_HOST_REDIS*`.
+No se promete seguridad absoluta ni entrega exactamente una vez entre proveedores. Un envío incierto se detiene para revisión; los errores y cuotas se muestran en Mi cuenta.

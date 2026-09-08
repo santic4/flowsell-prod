@@ -15,7 +15,7 @@ import { formatCurrency, formatNumber } from '../../utils/formatters.js';
 Modal.setAppElement('#root');
 
 const ProductList = () => {
-  const { products, error, loading, reloadProducts } = useGetProducts();
+  const { products,total,hasMore,loadMore,loadingMore,error, loading, reloadProducts } = useGetProducts();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedProduct, setSelectedProduct] = useState(null);
@@ -43,6 +43,8 @@ const ProductList = () => {
         <div><span><FiRefreshCw /></span><p><strong>En línea</strong><small>Sincronización con Mercado Libre</small></p></div>
       </section>
 
+      <p className="fs-quota-banner">{products.length} de {total} publicaciones cargadas. La búsqueda filtra las publicaciones cargadas.</p>
+      {hasMore&&<div className="fs-load-more"><button className="button button--secondary" disabled={loadingMore} onClick={loadMore}>{loadingMore?'Cargando…':'Cargar más publicaciones'}</button></div>}
       <section className="panel catalog-panel">
         <div className="toolbar">
           <div className="toolbar__search"><ProductSearch value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Buscar por título o ID…" /></div>

@@ -25,6 +25,7 @@ import SearchField from '../common/SearchField.jsx';
 import EmptyState from '../common/EmptyState.jsx';
 import Spinner from '../spinner/Spinner.jsx';
 import TemplateModal from '../templates/TemplateModal.jsx';
+import {useAccount} from '../account/AccountContext.jsx';
 
 Modal.setAppElement('#root');
 
@@ -95,6 +96,7 @@ const TemplateSequence = ({ productId, templates = [], variationId, processing, 
 };
 
 const SavedProducts = () => {
+  const {account}=useAccount();
   const { products, error, loading, reloadProducts } = useGetSavedProducts();
   const { templates, error: templatesError, loading: templatesLoading } = useGetTemplates();
   const [searchTerm, setSearchTerm] = useState('');
@@ -248,7 +250,7 @@ const SavedProducts = () => {
                 <header className="automation-card__header">
                   <span className="automation-card__icon"><FiPackage /></span>
                   <div><span>{product.id}</span><h2>{product.title}</h2></div>
-                  <span className="status-badge status-badge--success"><FiZap /> Activo</span>
+                  <span className={product.effectiveActive?'status-badge status-badge--success':'status-badge status-badge--warning'}><FiZap /> {product.effectiveActive?'Activo':product.enabled===false?'Pausado':'Fuera del cupo'}</span>
                 </header>
 
                 <div className="automation-card__body">
@@ -267,12 +269,13 @@ const SavedProducts = () => {
 
                   <section className="automation-column automation-column--delayed">
                     <div className="automation-column__heading"><span><FiClock /></span><div><h3>Seguimiento programado</h3><p>Se envía después del tiempo indicado.</p></div></div>
-                    <DelayControl product={product} saving={processing === `delay-${product.id}`} onSave={handleSaveDelay} />
+                    {account.plan.delayed?<DelayControl product={product} saving={processing === `delay-${product.id}`} onSave={handleSaveDelay} />:<p className="fs-quota-banner">Disponible desde <Link to="/app/plans">Premium</Link>.</p>}
                     <TemplateSequence productId={product.id} templates={product.secondMessages || []} processing={Boolean(processing)} onMove={() => {}} onDelete={handleDeleteSecondTemplate} allowReorder={false} />
-                    <button type="button" className="button button--secondary button--small button--fit" onClick={() => openSecondMessages(product)}><FiPlus /> Configurar seguimiento</button>
+                    <button type="button" className="button button--secondary button--small button--fit" disabled={!account.plan.delayed} onClick={() => openSecondMessages(product)}><FiPlus /> Configurar seguimiento</button>
                   </section>
                 </div>
 
+                <div className="fs-flow-settings"><button className="button button--secondary button--small" disabled={Boolean(processing)} onClick={()=>runAction('pause-'+product.id,()=>apiRequest('/api/products/'+product.id+'/settings',{method:'PATCH',body:JSON.stringify({enabled:product.enabled===false})}),'Estado del flujo actualizado.')}>{product.enabled===false?'Habilitar flujo':'Pausar flujo'}</button><label className="fs-check"><input type="checkbox" checked={Boolean(product.markDelivered)} disabled={Boolean(processing)} onChange={e=>{const checked=e.target.checked;if(checked&&!window.confirm('¿Confirmar entrega automáticamente sólo en órdenes sin envío físico? Activá esta opción únicamente si refleja la entrega real del producto.'))return;runAction('delivery-'+product.id,()=>apiRequest('/api/products/'+product.id+'/settings',{method:'PATCH',body:JSON.stringify({markDelivered:checked})}),'Preferencia guardada.');}}/><span>Confirmar entrega en órdenes sin envío físico (optativo).</span></label></div>
                 <footer className="automation-card__footer">
                   <span>Los cambios se aplican a las próximas ventas.</span>
                   <button type="button" className="danger-link" onClick={() => handleRemoveProduct(product)} disabled={processing === `remove-${product.id}`}><FiTrash2 /> Quitar flujo</button>
@@ -301,7 +304,7 @@ const SavedProducts = () => {
 
       <Modal isOpen={assignAllOpen} onRequestClose={() => setAssignAllOpen(false)} className="app-modal app-modal--large" overlayClassName="app-modal-overlay" contentLabel="Aplicar plantilla a todos los flujos">
         <div className="modal-shell">
-          <div className="modal-shell__header"><div><span className="modal-shell__eyebrow"><FiLayers /> Acción masiva</span><h2>Aplicar una plantilla a todos</h2><p>Se agregará al final de cada secuencia configurada, sin duplicados.</p></div><button type="button" className="icon-button" onClick={() => setAssignAllOpen(false)} aria-label="Cerrar"><FiX /></button></div>
+          <div className="modal-shell__header"><div><span className="modal-shell__eyebrow"><FiLayers /> Acción masiva</span><h2>Aplicar una plantilla a todos</h2><p>Se agregará a la secuencia general de los flujos activos dentro de tu plan, sin duplicados. Las variantes con una secuencia propia se configuran por separado.</p></div><button type="button" className="icon-button" onClick={() => setAssignAllOpen(false)} aria-label="Cerrar"><FiX /></button></div>
           <div className="modal-shell__body">
             {templatesLoading ? <div className="section-loader section-loader--compact"><Spinner loading size={32} color="#3483fa" /></div> : !templates.length ? <EmptyState icon={FiFileText} title="No hay plantillas disponibles" description="Creá una plantilla para poder aplicarla." /> : <TemplateSelector templates={templates} selected={assignAllSelection} onChange={setAssignAllSelection} search={assignAllSearch} onSearch={setAssignAllSearch} multiple={false} />}
           </div>

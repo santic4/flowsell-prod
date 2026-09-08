@@ -18,6 +18,8 @@ import SalesChart from './SalesChart.jsx';
 import useSalesStatistics from '../../hooks/useSalesStatistics.js';
 import { apiUrl } from '../../api/api.js';
 import { formatCurrency, formatDate, formatNumber, getDateRange } from '../../utils/formatters.js';
+import {useAccount} from '../account/AccountContext.jsx';
+import {Link} from 'react-router-dom';
 
 const presets = [
   { label: '7 días', days: 7 },
@@ -26,9 +28,11 @@ const presets = [
 ];
 
 const Statistics = () => {
-  const [draftRange, setDraftRange] = useState(getDateRange(30));
-  const [appliedRange, setAppliedRange] = useState(getDateRange(30));
-  const [activePreset, setActivePreset] = useState(30);
+  const {account}=useAccount();
+  const maxDays=account.plan.statisticsDays;
+  const [draftRange, setDraftRange] = useState(getDateRange(Math.min(30,maxDays)));
+  const [appliedRange, setAppliedRange] = useState(getDateRange(Math.min(30,maxDays)));
+  const [activePreset, setActivePreset] = useState(Math.min(30,maxDays));
   const [exporting, setExporting] = useState(false);
   const { data, loading, error, refresh } = useSalesStatistics(appliedRange);
   const summary = data?.summary || {};
@@ -43,6 +47,7 @@ const Statistics = () => {
   };
 
   const applyRange = () => {
+    if(draftRange.from<getDateRange(maxDays).from){toast.warning('Tu plan permite consultar los últimos '+maxDays+' días.');return;}
     if (!draftRange.from || !draftRange.to || new Date(draftRange.from) > new Date(draftRange.to)) {
       toast.warning('Revisá el rango de fechas.');
       return;
@@ -83,14 +88,14 @@ const Statistics = () => {
         title="Ventas y estadísticas"
         description="Analizá las ventas pagadas de la cuenta de Mercado Libre conectada."
         actions={(
-          <button type="button" className="button button--primary" onClick={exportCsv} disabled={exporting || loading || Boolean(error)}>
+          account.plan.export ? <button type="button" className="button button--primary" onClick={exportCsv} disabled={exporting || loading || Boolean(error)}>
             {exporting ? <><Spinner loading size={16} color="#fff" /> Exportando…</> : <><FiDownload /> Exportar CSV</>}
-          </button>
+          </button> : <Link className="button button--secondary" to="/app/plans">CSV disponible desde Premium</Link>
         )}
       />
 
       <section className="panel date-filter-panel">
-        <div className="date-presets">{presets.map((preset) => <button type="button" key={preset.days} className={activePreset === preset.days ? 'date-preset date-preset--active' : 'date-preset'} onClick={() => selectPreset(preset.days)}>{preset.label}</button>)}</div>
+        <div className="date-presets">{presets.filter(p=>p.days<=maxDays).map((preset) => <button type="button" key={preset.days} className={activePreset === preset.days ? 'date-preset date-preset--active' : 'date-preset'} onClick={() => selectPreset(preset.days)}>{preset.label}</button>)}<span className="form-hint">Historial de {maxDays} días · {account.plan.name}</span></div>
         <div className="date-filter-fields">
           <label><span>Desde</span><div className="input-with-icon"><FiCalendar /><input type="date" value={draftRange.from} max={draftRange.to} onChange={(event) => setDraftRange((range) => ({ ...range, from: event.target.value }))} /></div></label>
           <label><span>Hasta</span><div className="input-with-icon"><FiCalendar /><input type="date" value={draftRange.to} min={draftRange.from} max={getDateRange(1).to} onChange={(event) => setDraftRange((range) => ({ ...range, to: event.target.value }))} /></div></label>

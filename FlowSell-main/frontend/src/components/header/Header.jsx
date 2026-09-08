@@ -6,6 +6,10 @@ import LogoutButton from '../login/Logout.jsx';
 import { SUPPORT_WHATSAPP_URL } from '../../constants/support.js';
 
 const getPageMeta = (pathname) => {
+  if (pathname.includes('/guide')) return {eyebrow:'Centro de ayuda',title:'Guía de uso'};
+  if (pathname.includes('/plans')) return {eyebrow:'Capacidades',title:'Mi plan'};
+  if (pathname.includes('/account')) return {eyebrow:'Control y transparencia',title:'Mi cuenta y privacidad'};
+  if (pathname.includes('/admin')) return {eyebrow:'Acceso del titular',title:'Administración'};
   if (pathname.includes('/statistics')) return { eyebrow: 'Rendimiento', title: 'Ventas y estadísticas' };
   if (pathname.includes('/products')) return { eyebrow: 'Catálogo', title: 'Publicaciones' };
   if (pathname.includes('/automations') || pathname.includes('/saved')) return { eyebrow: 'Automatización', title: 'Flujos automáticos' };

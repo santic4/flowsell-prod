@@ -25,7 +25,7 @@ const toBoundaryIso = (date, endOfDay = false) =>
 
 const TrackingManager = () => {
   const defaultRange = getDateRange(60);
-  const { products, loading: productsLoading, error: productsError } = useGetProducts();
+  const { products,hasMore,loadMore,loadingMore, loading: productsLoading, error: productsError } = useGetProducts();
   const { refetch: requestBuyers, jobId, loading: requestingBuyers, error: requestError } = useBuyers();
   const { job, loadingStatus, error: statusError } = useJobStatus(jobId);
   const { templates, loading: templatesLoading, error: templatesError } = useGetTemplates();
@@ -135,6 +135,8 @@ const TrackingManager = () => {
             />
           )}
 
+          {hasMore&&<div className="fs-load-more"><button className="button button--secondary" disabled={loadingMore} onClick={loadMore}>Cargar más publicaciones</button></div>}
+          <p className="form-hint">Las selecciones y búsquedas se aplican a las publicaciones cargadas. Usá las campañas para comunicaciones posventa permitidas; no para publicidad indiscriminada.</p>
           <SelectedItemsList items={selectedProducts} onRemove={(productId) => toggleProduct(productId)} />
 
           <div className="campaign-divider" />

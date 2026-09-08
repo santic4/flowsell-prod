@@ -1,0 +1,17 @@
+**/node_modules/
+**/.env
+.env
+**/.env.*
+!**/.env.example
+frontend/build/
+backend/public/build/
+backend/qa/screenshots/
+*.log
+*.dump
+*.bak
+*.pem
+*.key
+coverage/
+**/redis-binaries/
+**/qa/screenshots/
+.build-history/

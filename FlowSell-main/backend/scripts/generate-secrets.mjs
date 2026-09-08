@@ -1,0 +1,12 @@
+import {randomBytes} from 'node:crypto';
+const alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+let bits='';for(const b of randomBytes(20))bits+=b.toString(2).padStart(8,'0');
+const totp=(bits.match(/.{5}/g)||[]).map(x=>alphabet[parseInt(x,2)]).join('');
+console.log('# Generados en TU equipo. Guardalos en un gestor de contraseñas. No los subas a Git ni los envíes por chat.');
+console.log('SESSION_SECRET='+randomBytes(48).toString('hex'));
+console.log('WEBHOOK_SECRET='+randomBytes(48).toString('hex'));
+console.log('TOKEN_ENCRYPTION_ACTIVE_KEY=v1');
+console.log('TOKEN_ENCRYPTION_KEYS='+JSON.stringify({v1:randomBytes(32).toString('base64')}));
+console.log('ADMIN_TOTP_SECRET='+totp);
+console.log('# Agregá ADMIN_TOTP_SECRET manualmente en tu autenticador: Flow Sell, tiempo, SHA1, 6 dígitos, 30 segundos.');
+console.log('# No vuelvas a generar y reemplazar claves de una instalación activa sin seguir la guía de rotación.');

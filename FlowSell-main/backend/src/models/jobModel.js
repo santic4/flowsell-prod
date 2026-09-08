@@ -22,6 +22,15 @@ const JobSchema = new mongoose.Schema({
   },
   createdAt: { type: Date, default: Date.now },
   completedAt: { type: Date },
+  itemIds: [String],
+  from: String,
+  to: String,
+  templateIds: [String],
+  sent: { type:Number, default:0 },
+  failed: { type:Number, default:0 },
+  errorCode: String,
+  expiresAt: {type:Date,default:()=>new Date(Date.now()+90*86400000)},
 });
+JobSchema.index({expiresAt:1},{expireAfterSeconds:0});
 
 export const JobModel = mongoose.model("Job", JobSchema);

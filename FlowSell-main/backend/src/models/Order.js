@@ -23,6 +23,7 @@ const OrderSchema = new mongoose.Schema({
 });
 
 OrderSchema.index({ sellerId: 1, orderId: 1 }, { unique: true });
+OrderSchema.index({ createdAt:1 }, { expireAfterSeconds:400*86400 });
 
 const Order = mongoose.model('Order', OrderSchema);
 

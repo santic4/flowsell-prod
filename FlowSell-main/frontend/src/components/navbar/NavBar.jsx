@@ -10,6 +10,8 @@ import {
   FiSend,
 } from 'react-icons/fi';
 import BrandMark from '../common/BrandMark.jsx';
+import {useAccount} from '../account/AccountContext.jsx';
+import {FiBookOpen,FiCreditCard,FiUser,FiShield} from 'react-icons/fi';
 import { SUPPORT_PHONE_DISPLAY, SUPPORT_WHATSAPP_URL } from '../../constants/support.js';
 
 const navigationGroups = [
@@ -33,6 +35,13 @@ const navigationGroups = [
 
 const NavBar = ({ collapsed, expandedForMobile, onCollapse, onNavigate }) => {
   const showLabels = !collapsed || expandedForMobile;
+  const {account}=useAccount();
+  const groups=[...navigationGroups,{label:'Tu espacio',items:[
+    {to:'/app/guide',label:'Guía de uso',icon:FiBookOpen},
+    {to:'/app/plans',label:'Mi plan · '+account.plan.name,icon:FiCreditCard},
+    {to:'/app/account',label:'Mi cuenta y privacidad',icon:FiUser},
+    ...(account.isAdmin?[{to:'/app/admin',label:'Administración',icon:FiShield}]:[]),
+  ]}];
   const linkProps = (item) => ({
     to: item.to,
     end: item.end,
@@ -55,7 +64,7 @@ const NavBar = ({ collapsed, expandedForMobile, onCollapse, onNavigate }) => {
       </div>
 
       <div className="sidebar-nav__content">
-        {navigationGroups.map((group) => (
+        {groups.map((group) => (
           <div className="sidebar-group" key={group.label}>
             {showLabels && <p className="sidebar-group__label">{group.label}</p>}
             {group.items.map((item) => {
@@ -87,7 +96,7 @@ const NavBar = ({ collapsed, expandedForMobile, onCollapse, onNavigate }) => {
       {showLabels && (
         <div className="sidebar-footer">
           <span className="status-dot" />
-          Servicios conectados
+          Espacio de {account.nickname}
         </div>
       )}
     </nav>

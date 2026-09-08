@@ -25,7 +25,7 @@ const MassiveMessagesStatus = ({ jobId }) => {
         <div className="campaign-status-card__copy">
           <span>{completed ? 'Campaña completada' : failed ? 'El envío se interrumpió' : 'Campaña en progreso'}</span>
           <h1>{completed ? 'Los mensajes fueron procesados' : failed ? 'No pudimos completar todos los envíos' : 'Estamos enviando tus mensajes'}</h1>
-          <p>{completed ? `La campaña alcanzó a ${recipients} comprador${recipients === 1 ? '' : 'es'}.` : failed ? 'Podés volver a Campañas y realizar un nuevo intento.' : 'Este proceso puede demorar unos minutos. La pantalla se actualiza automáticamente.'}</p>
+          <p>{completed ? `Mercado Libre aceptó los envíos para ${recipients} comprador${recipients === 1 ? '' : 'es'}. Esto no confirma lectura.` : failed ? 'Revisá la actividad de Mi cuenta y Mercado Libre antes de repetir una campaña, para evitar duplicados.' : 'Este proceso puede demorar unos minutos. La pantalla se actualiza automáticamente.'}</p>
         </div>
         {loading && <Spinner loading size={42} color="#3483fa" />}
       </section>

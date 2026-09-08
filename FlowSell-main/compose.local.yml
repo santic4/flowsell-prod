@@ -1,0 +1,25 @@
+# Desarrollo local únicamente. Variables en un archivo .env al lado de este compose.
+# MONGO_LOCAL_PASSWORD y REDIS_LOCAL_PASSWORD: claves de prueba, URL-encoded en las URI si tienen símbolos.
+# Docker: docker compose -f compose.local.yml up -d
+services:
+  mongo:
+    image: mongo:7.0
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: flowsell
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_LOCAL_PASSWORD:?Defini MONGO_LOCAL_PASSWORD}
+    ports:
+      - "127.0.0.1:27017:27017"
+    volumes:
+      - mongo-data:/data/db
+  redis:
+    image: redis:7.4-alpine
+    environment:
+      REDIS_PASSWORD: ${REDIS_LOCAL_PASSWORD:?Defini REDIS_LOCAL_PASSWORD}
+    command: ["/bin/sh", "-c", "exec redis-server --appendonly yes --maxmemory 128mb --maxmemory-policy noeviction --requirepass \"$$REDIS_PASSWORD\""]
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - redis-data:/data
+volumes:
+  mongo-data:
+  redis-data:
