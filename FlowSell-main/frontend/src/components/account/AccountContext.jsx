@@ -16,7 +16,7 @@ export function AccountProvider({children}) {
   const location=useLocation();
   const reload=useCallback(async()=>{
     try{const data=await apiRequest('/api/account');setAccount(data);setError('');return data;}
-    catch(e){if(e.status===401){window.location.assign('/login');return;}setError(e.message);}
+    catch(e){if(e.status===401){window.location.assign('/login?error=session');return;}setError(e.message);}
   },[]);
   useEffect(()=>{
     reload();let timer;

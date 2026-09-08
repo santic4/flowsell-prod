@@ -305,3 +305,34 @@ test('migración real: dry run no altera; aplicar cifra tokens y conserva refere
   migrated=await User.findById(alice._id).select('+accessToken');assert.equal(decryptToken(migrated.accessToken,'111'),'legacy-access');
   assert.equal(await Template.countDocuments({_id:tpl._id,owner:alice._id}),1);
 });
+
+test('OAuth completo conserva la sesión de cuentas antiguas y respeta versiones revocadas',async()=>{
+  const {default:express}=await import('express');
+  const {authStack,mountAuth}=await import('../src/http/auth.js');
+  const stack=authStack({store:new session.MemoryStore(),redis});
+  const authApp=express();authApp.use(stack.sessions,stack.passport.initialize(),stack.passport.session());
+  const router=express.Router();mountAuth(router,stack.passport,redis);authApp.use('/api',router);
+  const strategy=stack.passport._strategy('meli');
+  strategy._oauth2.getOAuthAccessToken=(code,params,done)=>done(null,'oauth-test-access','oauth-test-refresh',{expires_in:21600});
+  const originalFetch=globalThis.fetch;
+  globalThis.fetch=async input=>{
+    assert.equal(String(input),'https://api.mercadolibre.com/users/me');
+    return new Response(JSON.stringify({id:111,nickname:'ALICE',email:'alice@example.test'}),{headers:{'content-type':'application/json'}});
+  };
+  try {
+    for(const version of [undefined,7]) {
+      if(version===undefined)await User.collection.updateOne({_id:alice._id},{$unset:{sessionVersion:1}});
+      else await User.collection.updateOne({_id:alice._id},{$set:{sessionVersion:version}});
+      const browser=request.agent(authApp);
+      const started=await browser.get('/api/auth/login').expect(302);
+      const state=new URL(started.headers.location).searchParams.get('state');assert(state);
+      await browser.get('/api/auth/callback').query({code:'provider-test-code',state}).expect(302).expect('Location',config.appUrl+'/app');
+      const check=await browser.get('/api/auth/check').expect(200);
+      assert.equal(check.body.isAuthenticated,true,'Debe mantener la sesión luego de OAuth');
+      const saved=await User.collection.findOne({_id:alice._id});assert.equal(saved.sessionVersion,version??0);
+      assert.equal(decryptToken(saved.accessToken,'111'),'oauth-test-access');
+      await User.updateOne({_id:alice._id},{$inc:{sessionVersion:1}});
+      assert.equal((await browser.get('/api/auth/check').expect(200)).body.isAuthenticated,false,'La revocación debe seguir invalidando la sesión');
+    }
+  }finally{globalThis.fetch=originalFetch;}
+});

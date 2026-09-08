@@ -65,3 +65,7 @@ Pruebas: npm --prefix backend test. Compilación: npm --prefix frontend run buil
 Los controles del código no activan MFA en cuentas externas, no contratan backups ni registran bases ante la AAIP. Completá datos del responsable, regiones reales, garantías de transferencias y revisión jurídica; luego LEGAL_READY=true habilita la aceptación y operación. Nunca publiques datos legales ficticios.
 
 No se promete seguridad absoluta ni entrega exactamente una vez entre proveedores. Un envío incierto se detiene para revisión; los errores y cuotas se muestran en Mi cuenta.
+
+## Actualización de login para cuentas existentes
+
+Esta entrega corrige el regreso silencioso a /login cuando la cuenta anterior no tenía sessionVersion guardado. Reemplazá el código con esta versión, conservá tus envs y desplegá nuevamente. No regeneres SESSION_SECRET ni las claves de cifrado. Después iniciá sesión desde /login. La corrección no sustituye la migración de imágenes ni los pasos generales de MIGRACION.md.

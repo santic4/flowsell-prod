@@ -7,7 +7,7 @@ import User from '../models/User.js';
 import {config,production,legalReady,isAdmin,consentCurrent} from '../core/config.js';
 import {encryptToken,equalSecret} from '../core/crypto.js';
 import {meliRequest} from '../core/meli.js';
-import {ensure,wrap} from '../core/errors.js';
+import {ensure,wrap,log} from '../core/errors.js';
 import {rate} from '../core/runtime.js';
 
 export const cookieOptions={httpOnly:true,secure:production,sameSite:'lax',path:'/'};
@@ -19,6 +19,7 @@ export function authStack({store,redis}) {
     try {
       if(!identity?.id) return done(null,false); // sesiones anteriores se invalidan en la migración
       const user=await User.findOne({_id:identity.id,sessionVersion:identity.version||0,status:{$ne:'deleting'}});
+      if(!user)log('session_identity_unavailable');
       done(null,user||false);
     } catch(e){done(e);}
   });
@@ -32,7 +33,11 @@ export function authStack({store,redis}) {
       ensure(/^\d+$/.test(String(data.id)),502,'Perfil inválido.');
       const existing=await User.findOne({meliId:String(data.id)});
       ensure(existing?.status!=='deleting',409,'La eliminación de la cuenta sigue en curso.');
-      ensure(!production||legalReady()||isAdmin({meliId:data.id}),503,'Las altas están temporalmente suspendidas mientras se completa la información legal.');
+      ensure(!production||legalReady()||isAdmin({meliId:data.id}),503,'Las altas están temporalmente suspendidas mientras se completa la información legal.','LEGAL_NOT_READY');
+      // $setOnInsert no actualiza documentos de la versión anterior. Persistir el
+      // valor ausente antes de serializar evita perder la sesión al volver de OAuth.
+      // Nunca restablecer un contador existente: protege la revocación de sesiones.
+      await User.updateOne({meliId:String(data.id),sessionVersion:{$exists:false}},{$set:{sessionVersion:0}});
       const user=await User.findOneAndUpdate({meliId:String(data.id)},{$set:{
         nickname:String(data.nickname||'').slice(0,100),email:String(data.email||'').slice(0,254),
         accessToken:encryptToken(accessToken,data.id),refreshToken:encryptToken(refreshToken,data.id),
@@ -71,7 +76,11 @@ export function mountAuth(router,passport,redis) {
   router.get('/auth/login',wrap(async(req,res,next)=>{await rate(redis,'login:'+req.ip,12,300);req.session.oauthStartedAt=Date.now();next();}),passport.authenticate('meli'));
   router.get('/auth/callback',wrap(async(req,res,next)=>{await rate(redis,'callback:'+req.ip,20,300);if(!req.session.oauthStartedAt||Date.now()-req.session.oauthStartedAt>600000)return res.redirect(config.appUrl+'/login?error=oauth');next();}),(req,res,next)=>{
     passport.authenticate('meli',(err,user)=>{
-      if(err||!user) return res.redirect(config.appUrl+'/login?error=oauth');
+      if(err||!user) {
+        const reason=['LEGAL_NOT_READY','TOKEN_DECRYPT_FAILED','invalid_grant','invalid_client','invalid_request'].includes(err?.code)?err.code:'AUTHORIZATION_FAILED';
+        log('oauth_failed',{reason});
+        return res.redirect(config.appUrl+'/login?error=oauth');
+      }
       req.logIn(user,error=>{
         if(error) return next(error);
         req.session.authAt=Date.now();req.session.csrf=randomBytes(32).toString('hex');

@@ -4,7 +4,7 @@ Fecha: 8 de septiembre de 2026. Código fuente completo en este paquete; no se r
 
 ## Resultados obtenidos
 
-- Backend: **27 pruebas aprobadas, 0 fallos**, ejecutando las rutas reales de Express contra MongoDB 7 temporal y Redis temporal.
+- Backend: **28 pruebas aprobadas, 0 fallos**, ejecutando las rutas reales de Express contra MongoDB 7 temporal y Redis temporal.
 - Compilación frontend Vite de producción: **correcta**. Se incluye una copia compilada en backend/public/build, además del código fuente y los lockfiles.
 - Navegador: login a **320, 375, 768, 1280 y 1905 px**; privacidad, términos y guía pública a 375 px; ocho secciones privadas a 375 y 1280 px. Sin desbordes horizontales ni errores de ejecución de React en esos recorridos. Se inspeccionaron visualmente capturas de login móvil y escritorio.
 - Dependencias: **npm audit sin vulnerabilidades reportadas** en backend y frontend, incluyendo desarrollo, al realizar la revisión. Es una consulta de avisos conocidos de esa fecha, no una auditoría de seguridad de la aplicación.
@@ -58,3 +58,9 @@ El workflow de GitHub Actions está incluido pero no se ejecutó en tu repositor
 Antes de abrir la venta, con claves y datos de prueba: completá las envs, migrá una copia de la base, verificá OAuth, carga/lectura/borrado de imagen privada, una orden autorizada, diferidos, campaña permitida y cambio/vencimiento de plan. Revisá las restricciones efectivas de Mercado Libre para tu cuenta y permisos. Confirmá TLS, autenticación Redis, política noeviction, backups restaurables, alertas y configuración legal real.
 
 No se realizó pentesting externo, prueba de carga masiva ni certificación legal. La separación entre cuentas está ejercitada en las pruebas incluidas, pero la seguridad en producción también depende de las configuraciones y accesos descritos en SEGURIDAD-Y-PRIVACIDAD.md.
+
+## Corrección de retorno silencioso del login
+
+Se reprodujo una cuenta existente sin sessionVersion persistido: OAuth finalizaba, pero la siguiente solicitud no encontraba la cuenta con el contador de sesión esperado. Se corrige guardando cero sólo cuando el campo no existe, después de verificar OAuth, sin restablecer contadores de revocación existentes. Una prueba recorre autorización, callback, cookie y consulta de autenticación, y comprueba la revocación posterior. Falló antes de la corrección y pasó después; el proveedor OAuth se simula, sin acceso a la cuenta productiva.
+
+La interfaz ahora muestra un aviso si pierde la sesión al entrar al panel. Los fallos OAuth dejan un motivo acotado en los logs, sin credenciales, cookies ni respuestas privadas del proveedor.
