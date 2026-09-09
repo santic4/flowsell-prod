@@ -11,6 +11,51 @@ const svgThumbnail = (label, accent = '#3483fa') => {
   return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
 };
 
+
+const publicProductImage = (photoId) =>
+  `https://images.pexels.com/photos/${photoId}/pexels-photo-${photoId}.jpeg?auto=compress&cs=tinysrgb&w=640&h=640&fit=crop`;
+
+// Imágenes públicas para el catálogo MOCK. El orden coincide con PRODUCT_SEED.
+// Se sirven directamente desde Pexels: no hace falta guardar archivos de imagen en el proyecto.
+const PRODUCT_IMAGE_IDS = [
+  15840650, // Auriculares Bluetooth Inalámbricos Pro
+  4792717,  // Soporte Notebook Aluminio Regulable
+  7006947,  // Mouse Inalámbrico Ergonómico USB-C
+  28842075, // Teclado Mecánico Compacto RGB
+  7439757,  // Lámpara LED Escritorio con USB
+  15000981, // Cargador Rápido 30W USB-C
+  4195398,  // Hub USB-C 7 en 1 HDMI
+  7172701,  // Webcam Full HD con Micrófono
+  4917455,  // Parlante Bluetooth Portátil
+  10104285, // Power Bank 20.000 mAh Carga Rápida
+  3921713,  // Cable USB-C Reforzado 2 Metros
+  4792717,  // Base Refrigerante para Notebook
+  20213730, // Organizador de Cables para Escritorio
+  12199411, // Mini Trípode Flexible para Celular
+  12199411, // Aro de Luz LED 26 cm con Trípode
+  89723,    // Funda Notebook 15.6 Impermeable
+  4195398,  // Adaptador HDMI a USB-C 4K
+  6953871,  // Micrófono USB Condensador Streaming
+  33072751, // Control Remoto Bluetooth para Celular
+  4792717,  // Stand Vertical para Notebook
+  5805488,  // Kit Limpieza Electrónica 8 en 1
+  31497027, // Alfombrilla XL para Escritorio
+  4195398,  // Adaptador Bluetooth 5.3 USB
+  12997230, // Cable HDMI 2.1 2 Metros
+  33072751, // Soporte Celular para Escritorio
+  7742584,  // Cargador Inalámbrico 15W
+  7054799,  // Mochila Urbana para Notebook 15.6
+  4195398,  // Lector de Tarjetas USB-C SD MicroSD
+  914915,   // Extensión USB 3.0 1.5 Metros
+  15000981, // Protector de Tensión 6 Tomas USB
+  31497028, // Apoya Muñeca Ergonómico Teclado
+  5805486,  // Soporte Doble Monitor de Escritorio
+  6303718,  // Balanza Digital Cocina 10 kg
+  6035322,  // Termómetro Digital Infrarrojo Cocina
+  30469934, // Botella Térmica Acero 750 ml
+  18999368, // Set Organizadores de Viaje x6
+];
+
 const PRODUCT_SEED = [
   ['Auriculares Bluetooth Inalámbricos Pro', 38990, 428, 12, 'AU'],
   ['Soporte Notebook Aluminio Regulable', 31990, 316, 0, 'SN'],
@@ -67,7 +112,12 @@ export const mockProducts = PRODUCT_SEED.map(([title, price, sold, variationCoun
   return {
     id,
     title,
-    thumbnail: svgThumbnail(initials, ACCENTS[index % ACCENTS.length]),
+    thumbnail: PRODUCT_IMAGE_IDS[index]
+      ? publicProductImage(PRODUCT_IMAGE_IDS[index])
+      : svgThumbnail(initials, ACCENTS[index % ACCENTS.length]),
+    secure_thumbnail: PRODUCT_IMAGE_IDS[index]
+      ? publicProductImage(PRODUCT_IMAGE_IDS[index])
+      : svgThumbnail(initials, ACCENTS[index % ACCENTS.length]),
     status: index === 9 || index === 27 ? 'paused' : 'active',
     available_quantity: 14 + ((index * 7) % 48),
     sold_quantity: sold,

@@ -87,7 +87,6 @@ const NavBar = ({ collapsed, expandedForMobile, onCollapse, onNavigate }) => {
             <span>
               <strong>¿Necesitás ayuda?</strong>
               <small>Escribinos por WhatsApp</small>
-              <small>{SUPPORT_PHONE_DISPLAY}</small>
             </span>
           )}
         </a>
