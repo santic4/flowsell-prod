@@ -12,49 +12,105 @@ const svgThumbnail = (label, accent = '#3483fa') => {
 };
 
 
-const publicProductImage = (photoId) =>
-  `https://images.pexels.com/photos/${photoId}/pexels-photo-${photoId}.jpeg?auto=compress&cs=tinysrgb&w=640&h=640&fit=crop`;
+const xml = (value) => String(value)
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&apos;');
 
-// Imágenes públicas para el catálogo MOCK. El orden coincide con PRODUCT_SEED.
-// Se sirven directamente desde Pexels: no hace falta guardar archivos de imagen en el proyecto.
-const PRODUCT_IMAGE_IDS = [
-  15840650, // Auriculares Bluetooth Inalámbricos Pro
-  4792717,  // Soporte Notebook Aluminio Regulable
-  7006947,  // Mouse Inalámbrico Ergonómico USB-C
-  28842075, // Teclado Mecánico Compacto RGB
-  7439757,  // Lámpara LED Escritorio con USB
-  15000981, // Cargador Rápido 30W USB-C
-  4195398,  // Hub USB-C 7 en 1 HDMI
-  7172701,  // Webcam Full HD con Micrófono
-  4917455,  // Parlante Bluetooth Portátil
-  10104285, // Power Bank 20.000 mAh Carga Rápida
-  3921713,  // Cable USB-C Reforzado 2 Metros
-  4792717,  // Base Refrigerante para Notebook
-  20213730, // Organizador de Cables para Escritorio
-  12199411, // Mini Trípode Flexible para Celular
-  12199411, // Aro de Luz LED 26 cm con Trípode
-  89723,    // Funda Notebook 15.6 Impermeable
-  4195398,  // Adaptador HDMI a USB-C 4K
-  6953871,  // Micrófono USB Condensador Streaming
-  33072751, // Control Remoto Bluetooth para Celular
-  4792717,  // Stand Vertical para Notebook
-  5805488,  // Kit Limpieza Electrónica 8 en 1
-  31497027, // Alfombrilla XL para Escritorio
-  4195398,  // Adaptador Bluetooth 5.3 USB
-  12997230, // Cable HDMI 2.1 2 Metros
-  33072751, // Soporte Celular para Escritorio
-  7742584,  // Cargador Inalámbrico 15W
-  7054799,  // Mochila Urbana para Notebook 15.6
-  4195398,  // Lector de Tarjetas USB-C SD MicroSD
-  914915,   // Extensión USB 3.0 1.5 Metros
-  15000981, // Protector de Tensión 6 Tomas USB
-  31497028, // Apoya Muñeca Ergonómico Teclado
-  5805486,  // Soporte Doble Monitor de Escritorio
-  6303718,  // Balanza Digital Cocina 10 kg
-  6035322,  // Termómetro Digital Infrarrojo Cocina
-  30469934, // Botella Térmica Acero 750 ml
-  18999368, // Set Organizadores de Viaje x6
-];
+// Las imágenes MOCK son SVG embebidos como data: URL.
+// Esto evita depender de hosts externos y funciona con la CSP actual de Flow Sell,
+// que ya permite img-src data:. No se guarda ningún archivo de imagen en el proyecto.
+const productMockImage = (title, accent = '#3483fa', index = 0) => {
+  const t = String(title || '').toLowerCase();
+  const dark = '#172033';
+  const soft = '#eef4ff';
+  const white = '#ffffff';
+  const muted = '#7b8aa0';
+
+  let art = '';
+  if (t.includes('auricular')) {
+    art = `<path d="M74 130v-12c0-34 20-57 46-57s46 23 46 57v12" fill="none" stroke="${dark}" stroke-width="12" stroke-linecap="round"/><rect x="61" y="118" width="31" height="61" rx="14" fill="${accent}"/><rect x="148" y="118" width="31" height="61" rx="14" fill="${accent}"/><rect x="70" y="132" width="12" height="32" rx="6" fill="${white}" opacity=".8"/><rect x="157" y="132" width="12" height="32" rx="6" fill="${white}" opacity=".8"/>`;
+  } else if (t.includes('notebook') && (t.includes('soporte') || t.includes('stand') || t.includes('base'))) {
+    art = `<rect x="63" y="62" width="114" height="72" rx="7" fill="${dark}"/><rect x="71" y="70" width="98" height="55" rx="3" fill="${soft}"/><path d="M87 149h66l22 24H65z" fill="${accent}"/><path d="M98 144l-15 29M142 144l15 29" stroke="${dark}" stroke-width="8" stroke-linecap="round"/>`;
+  } else if (t.includes('mouse')) {
+    art = `<path d="M120 57c29 0 50 23 50 55v28c0 35-21 55-50 55s-50-20-50-55v-28c0-32 21-55 50-55z" fill="${dark}"/><path d="M120 58v48" stroke="${white}" stroke-width="4" opacity=".75"/><rect x="114" y="76" width="12" height="25" rx="6" fill="${accent}"/>`;
+  } else if (t.includes('teclado')) {
+    art = `<rect x="48" y="79" width="144" height="92" rx="13" fill="${dark}"/><g fill="${soft}">${Array.from({length:5},(_,r)=>Array.from({length:10},(_,c)=>`<rect x="${58+c*13}" y="${90+r*14}" width="9" height="9" rx="2"/>`).join('')).join('')}</g><rect x="84" y="146" width="72" height="9" rx="4" fill="${accent}"/>`;
+  } else if (t.includes('lámpara') || t.includes('lampara')) {
+    art = `<path d="M95 74h50l22 45H73z" fill="${accent}"/><rect x="115" y="118" width="10" height="52" rx="5" fill="${dark}"/><rect x="86" y="169" width="68" height="12" rx="6" fill="${dark}"/><circle cx="120" cy="97" r="12" fill="${white}" opacity=".85"/>`;
+  } else if (t.includes('cargador') && !t.includes('inalámbrico') && !t.includes('inalambrico')) {
+    art = `<rect x="82" y="67" width="76" height="99" rx="18" fill="${dark}"/><rect x="104" y="47" width="10" height="28" rx="4" fill="${muted}"/><rect x="126" y="47" width="10" height="28" rx="4" fill="${muted}"/><rect x="104" y="139" width="32" height="8" rx="4" fill="${accent}"/><path d="M126 88l-19 28h17l-9 25 25-34h-17z" fill="${accent}"/>`;
+  } else if (t.includes('hub') || t.includes('lector de tarjetas')) {
+    art = `<rect x="58" y="91" width="124" height="58" rx="15" fill="${dark}"/><rect x="72" y="105" width="19" height="11" rx="3" fill="${accent}"/><rect x="98" y="105" width="19" height="11" rx="3" fill="${soft}"/><rect x="124" y="105" width="19" height="11" rx="3" fill="${soft}"/><rect x="150" y="105" width="18" height="29" rx="4" fill="${accent}"/><path d="M182 120h25" stroke="${dark}" stroke-width="9" stroke-linecap="round"/>`;
+  } else if (t.includes('webcam')) {
+    art = `<rect x="58" y="78" width="124" height="79" rx="17" fill="${dark}"/><circle cx="120" cy="117" r="27" fill="${accent}"/><circle cx="120" cy="117" r="13" fill="${soft}"/><circle cx="129" cy="108" r="4" fill="${white}"/><rect x="105" y="157" width="30" height="15" rx="5" fill="${dark}"/><rect x="86" y="170" width="68" height="9" rx="4" fill="${dark}"/>`;
+  } else if (t.includes('parlante')) {
+    art = `<rect x="74" y="55" width="92" height="132" rx="22" fill="${dark}"/><circle cx="120" cy="92" r="24" fill="${soft}"/><circle cx="120" cy="145" r="31" fill="${accent}"/><circle cx="120" cy="145" r="14" fill="${dark}" opacity=".45"/>`;
+  } else if (t.includes('power bank')) {
+    art = `<rect x="76" y="61" width="88" height="126" rx="18" fill="${dark}"/><rect x="93" y="81" width="54" height="11" rx="5" fill="${accent}"/><path d="M126 105l-24 37h20l-8 24 28-39h-20z" fill="${accent}"/>`;
+  } else if (t.includes('cable') || t.includes('extensión') || t.includes('extension')) {
+    art = `<path d="M74 84c0 33 92 13 92 51 0 28-28 41-51 41-20 0-39-10-39-31 0-16 14-27 30-27" fill="none" stroke="${dark}" stroke-width="12" stroke-linecap="round"/><rect x="58" y="66" width="34" height="26" rx="6" fill="${accent}"/><rect x="151" y="128" width="34" height="26" rx="6" fill="${accent}"/>`;
+  } else if (t.includes('refrigerante')) {
+    art = `<path d="M61 88h118l-15 87H76z" fill="${dark}"/><circle cx="101" cy="130" r="27" fill="${soft}"/><circle cx="139" cy="130" r="27" fill="${soft}"/><path d="M101 108v44M79 130h44M139 108v44M117 130h44" stroke="${accent}" stroke-width="7" stroke-linecap="round"/>`;
+  } else if (t.includes('organizador de cables') || t.includes('organizador')) {
+    art = `<rect x="62" y="76" width="116" height="98" rx="20" fill="${soft}" stroke="${dark}" stroke-width="7"/><path d="M82 101h76M82 125h76M82 149h50" stroke="${accent}" stroke-width="9" stroke-linecap="round"/><circle cx="155" cy="149" r="10" fill="${dark}"/>`;
+  } else if (t.includes('trípode') || t.includes('tripode')) {
+    art = `<rect x="97" y="58" width="46" height="67" rx="10" fill="${dark}"/><rect x="104" y="66" width="32" height="50" rx="4" fill="${soft}"/><path d="M120 124v21M120 145l-40 39M120 145l40 39M120 145v42" stroke="${accent}" stroke-width="9" stroke-linecap="round"/>`;
+  } else if (t.includes('aro de luz')) {
+    art = `<circle cx="120" cy="96" r="47" fill="none" stroke="${accent}" stroke-width="14"/><rect x="105" y="72" width="30" height="49" rx="7" fill="${dark}"/><path d="M120 143v42M120 159l-28 28M120 159l28 28" stroke="${dark}" stroke-width="8" stroke-linecap="round"/>`;
+  } else if (t.includes('funda') || t.includes('mochila')) {
+    art = `<path d="M84 81c0-19 15-34 36-34s36 15 36 34v9h14v94H70V90h14z" fill="${dark}"/><path d="M98 81c0-12 10-22 22-22s22 10 22 22" fill="none" stroke="${accent}" stroke-width="8"/><rect x="90" y="111" width="60" height="46" rx="10" fill="${accent}" opacity=".85"/>`;
+  } else if (t.includes('adaptador') || t.includes('bluetooth')) {
+    art = `<rect x="76" y="86" width="88" height="66" rx="15" fill="${dark}"/><rect x="164" y="101" width="25" height="36" rx="5" fill="${accent}"/><path d="M112 101l23 18-23 18v-36zm0 0l-15 14m15 22l-15-14" fill="none" stroke="${accent}" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"/>`;
+  } else if (t.includes('micrófono') || t.includes('microfono')) {
+    art = `<rect x="95" y="54" width="50" height="91" rx="25" fill="${dark}"/><path d="M79 116c0 29 17 48 41 48s41-19 41-48" fill="none" stroke="${accent}" stroke-width="9" stroke-linecap="round"/><path d="M120 165v20M94 185h52" stroke="${dark}" stroke-width="9" stroke-linecap="round"/>`;
+  } else if (t.includes('control remoto')) {
+    art = `<rect x="91" y="47" width="58" height="143" rx="24" fill="${dark}"/><circle cx="120" cy="78" r="12" fill="${accent}"/><circle cx="106" cy="111" r="7" fill="${soft}"/><circle cx="134" cy="111" r="7" fill="${soft}"/><rect x="104" y="137" width="32" height="9" rx="4" fill="${accent}"/>`;
+  } else if (t.includes('limpieza')) {
+    art = `<rect x="73" y="78" width="94" height="101" rx="18" fill="${dark}"/><rect x="92" y="54" width="56" height="28" rx="10" fill="${accent}"/><path d="M94 105h52M94 127h52M94 149h33" stroke="${soft}" stroke-width="8" stroke-linecap="round"/>`;
+  } else if (t.includes('alfombrilla') || t.includes('muñeca') || t.includes('muneca')) {
+    art = `<rect x="48" y="86" width="144" height="87" rx="19" fill="${dark}"/><path d="M68 150c29-39 68-39 103 0" fill="none" stroke="${accent}" stroke-width="11" stroke-linecap="round"/>`;
+  } else if (t.includes('inalámbrico 15w') || t.includes('inalambrico 15w')) {
+    art = `<ellipse cx="120" cy="136" rx="61" ry="35" fill="${dark}"/><ellipse cx="120" cy="126" rx="52" ry="29" fill="${soft}"/><path d="M126 91l-23 34h20l-9 25 29-39h-20z" fill="${accent}"/>`;
+  } else if (t.includes('protector de tensión') || t.includes('protector de tension')) {
+    art = `<rect x="58" y="92" width="124" height="71" rx="18" fill="${dark}"/><g fill="${soft}"><circle cx="82" cy="120" r="10"/><circle cx="110" cy="120" r="10"/><circle cx="138" cy="120" r="10"/></g><rect x="155" y="109" width="14" height="25" rx="4" fill="${accent}"/>`;
+  } else if (t.includes('monitor')) {
+    art = `<rect x="48" y="60" width="63" height="78" rx="8" fill="${dark}"/><rect x="129" y="60" width="63" height="78" rx="8" fill="${dark}"/><rect x="57" y="69" width="45" height="57" rx="3" fill="${soft}"/><rect x="138" y="69" width="45" height="57" rx="3" fill="${soft}"/><path d="M120 83v82M92 165h56" stroke="${accent}" stroke-width="9" stroke-linecap="round"/>`;
+  } else if (t.includes('balanza')) {
+    art = `<rect x="64" y="80" width="112" height="101" rx="22" fill="${dark}"/><rect x="88" y="100" width="64" height="34" rx="7" fill="${soft}"/><text x="120" y="125" text-anchor="middle" font-family="Arial,sans-serif" font-size="20" font-weight="700" fill="${accent}">0.000</text>`;
+  } else if (t.includes('termómetro') || t.includes('termometro')) {
+    art = `<rect x="105" y="48" width="30" height="105" rx="15" fill="${dark}"/><circle cx="120" cy="166" r="27" fill="${accent}"/><rect x="115" y="70" width="10" height="86" rx="5" fill="${accent}"/>`;
+  } else if (t.includes('botella')) {
+    art = `<rect x="98" y="48" width="44" height="27" rx="8" fill="${dark}"/><path d="M91 82c0-9 7-16 16-16h26c9 0 16 7 16 16v92c0 10-8 18-18 18h-22c-10 0-18-8-18-18z" fill="${accent}"/><path d="M106 91h28" stroke="${white}" stroke-width="7" stroke-linecap="round" opacity=".75"/>`;
+  } else {
+    art = `<rect x="68" y="70" width="104" height="104" rx="24" fill="${dark}"/><circle cx="120" cy="122" r="35" fill="${accent}"/><path d="M102 122l12 12 27-31" fill="none" stroke="${white}" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>`;
+  }
+
+  const short = title
+    .replace(/\b(con|para|de|y|x\d+)\b/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .split(' ')
+    .slice(0, 3)
+    .join(' ');
+
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="420" viewBox="0 0 240 210">
+    <defs>
+      <linearGradient id="bg${index}" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#f8fbff"/><stop offset="1" stop-color="#e8f0fb"/>
+      </linearGradient>
+    </defs>
+    <rect width="240" height="210" rx="22" fill="url(#bg${index})"/>
+    <circle cx="201" cy="27" r="30" fill="${accent}" opacity=".08"/>
+    <circle cx="31" cy="178" r="43" fill="${accent}" opacity=".06"/>
+    ${art}
+    <rect x="54" y="190" width="132" height="1" fill="#dce5f0"/>
+    <text x="120" y="203" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="8.8" font-weight="700" fill="#516174">${xml(short)}</text>
+  </svg>`;
+  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+};
 
 const PRODUCT_SEED = [
   ['Auriculares Bluetooth Inalámbricos Pro', 38990, 428, 12, 'AU'],
@@ -112,12 +168,8 @@ export const mockProducts = PRODUCT_SEED.map(([title, price, sold, variationCoun
   return {
     id,
     title,
-    thumbnail: PRODUCT_IMAGE_IDS[index]
-      ? publicProductImage(PRODUCT_IMAGE_IDS[index])
-      : svgThumbnail(initials, ACCENTS[index % ACCENTS.length]),
-    secure_thumbnail: PRODUCT_IMAGE_IDS[index]
-      ? publicProductImage(PRODUCT_IMAGE_IDS[index])
-      : svgThumbnail(initials, ACCENTS[index % ACCENTS.length]),
+    thumbnail: productMockImage(title, ACCENTS[index % ACCENTS.length], index),
+    secure_thumbnail: productMockImage(title, ACCENTS[index % ACCENTS.length], index),
     status: index === 9 || index === 27 ? 'paused' : 'active',
     available_quantity: 14 + ((index * 7) % 48),
     sold_quantity: sold,
