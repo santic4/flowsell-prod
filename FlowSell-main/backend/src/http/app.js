@@ -20,7 +20,7 @@ export function createApp(deps) {
   if(production)app.set('trust proxy',1);
   app.use(helmet({referrerPolicy:{policy:'no-referrer'},contentSecurityPolicy:{directives:{
     defaultSrc:["'self'"],scriptSrc:["'self'"],styleSrc:["'self'","'unsafe-inline'"],
-    fontSrc:["'self'",'data:'],imgSrc:["'self'",'data:','blob:','https://*.mlstatic.com'],
+    fontSrc:["'self'",'data:'],imgSrc:["'self'",'data:','blob:','https://*.mlstatic.com',...(config.mock?['https://images.pexels.com']:[])],
     connectSrc:["'self'"],objectSrc:["'none'"],frameAncestors:["'none'"],formAction:["'self'"],baseUri:["'self'"],
     upgradeInsecureRequests:production?[]:null,
   }},strictTransportSecurity:production?{maxAge:31536000,includeSubDomains:true}:false}));
