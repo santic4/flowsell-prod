@@ -82,7 +82,9 @@ const TemplateModal = ({ product, closeModal, onAssigned, allowEmpty = false }) 
           templateIds: selectedTemplates,
           productAsign: product.title,
           variationId: selectedVariation || null,
-          variationName: selectedVariationObject ? getVariationLabel(selectedVariationObject) : null,
+          variationName: selectedVariationObject
+            ? getVariationLabel(selectedVariationObject)
+            : undefined,
         }),
       });
       onAssigned?.();

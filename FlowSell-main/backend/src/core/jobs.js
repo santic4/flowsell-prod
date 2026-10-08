@@ -15,6 +15,7 @@ const transient = error => ['OPERATION_BUSY','REDIS_UNAVAILABLE','LOCK_LOST','RA
 
 export function jobHandlers(deps) {
   const {redis,queue,meli,media}=deps;
+
   async function deliver(owner,orderId,templateId,phase,jobId,flowId) {
     return withLock(redis,'account:'+owner,async lease=>{
       const user=await liveUser(owner),plan=planFor(user);
@@ -73,6 +74,7 @@ export function jobHandlers(deps) {
       }
     });
   }
+
   async function notification(data) {
     const notice=await Notice.findById(data.noticeId);if(!notice?.pending)return;
     const receivedAt=notice.receivedAt;
@@ -117,6 +119,7 @@ export function jobHandlers(deps) {
     }
     await Notice.updateOne({_id:notice._id,receivedAt},{$set:{pending:false}});
   }
+  
   async function buyers(data) {
     const job=await JobModel.findOne({jobId:data.jobId});if(!job||job.status==='COMPLETED')return;
     try {
@@ -138,6 +141,7 @@ export function jobHandlers(deps) {
       await JobModel.updateOne({_id:job._id},{$set:{status:'FAILED',errorCode:e.code==='PLAN_LIMIT'?'PLAN_LIMIT':'SEARCH_FAILED'}});
     }
   }
+
   async function campaign(data) {
     const job=await JobModel.findOne({jobId:data.jobId,statusMessagesMassive:'PROCESSING'});if(!job)return;
     try {
@@ -156,6 +160,7 @@ export function jobHandlers(deps) {
       throw e;
     }
   }
+
   async function cleanup() {
     // Archivos huérfanos de una carga interrumpida también se recogen.
     const pending=await Media.find({$or:[{state:'deleting'},{state:'pending',createdAt:{$lt:new Date(Date.now()-86400000)}}]}).limit(100);
@@ -184,29 +189,56 @@ export function jobHandlers(deps) {
   }
   return {notification,buyers,campaign,delayed:d=>deliver(d.owner,d.orderId,d.templateId,'delayed',null,d.flowId),cleanup};
 }
+
 export async function startWorkers(deps) {
   const handlers=jobHandlers(deps);
+
   const worker=new Worker('flowsell-v2',async job=>{
-    if(!handlers[job.name])throw new Error('UNKNOWN_JOB');
-    const identity=job.data.jobId||job.data.noticeId||job.id;
-    return withLock(deps.redis,'job:'+job.name+':'+identity,()=>handlers[job.name](job.data));
-  },{connection:deps.queueRedis,concurrency:2,limiter:{max:30,duration:1000},lockDuration:120000});
+
+      if(!handlers[job.name])throw new Error('UNKNOWN_JOB');
+
+      const identity=job.data.jobId||job.data.noticeId||job.id;
+
+      return withLock(deps.redis,'job:'+job.name+':'+identity,()=>handlers[job.name](job.data));
+
+    },
+    {
+      connection:deps.queueRedis,
+      concurrency:2,
+      limiter:{max:30,duration:1000},
+      lockDuration:120000
+    }
+  );
+
   worker.on('failed',job=>log('job_failed',{kind:job?.name||'unknown'}));
   worker.on('error',()=>log('worker_error'));
+
   let dispatching=false;
+
   const dispatch=async()=>{
     if(dispatching)return;dispatching=true;
+
     try {
       await withLock(deps.redis,'dispatcher',async()=>{
+        
         for(const n of await Notice.find({pending:true}).limit(100))await deps.queue.add('notification',{noticeId:String(n._id)},{jobId:'notice-'+n._id+'-'+Math.floor(Date.now()/60000)});
+        
         for(const j of await JobModel.find({$or:[{status:{$in:['PENDING','IN_PROGRESS']}},{statusMessagesMassive:'PROCESSING'}]}).limit(50)) {
           const kind=['PENDING','IN_PROGRESS'].includes(j.status)?'buyers':'campaign';
           await deps.queue.add(kind,{jobId:j.jobId},{jobId:kind+'-'+j.jobId+'-'+Math.floor(Date.now()/60000)});
         }
+
         await deps.queue.add('cleanup',{}, {jobId:'cleanup-'+Math.floor(Date.now()/300000)});
       });
-    } catch(e){if(e.code!=='OPERATION_BUSY')log('dispatcher_unavailable');}finally{dispatching=false;}
+      } catch(e){
+        if(e.code!=='OPERATION_BUSY')
+          log('dispatcher_unavailable');
+      } finally{
+          dispatching=false;
+      }
   };
+
   const timer=setInterval(dispatch,30000);timer.unref();await dispatch();
+
   return {worker,async close(){clearInterval(timer);await worker.close();}};
 }
